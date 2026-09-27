@@ -1,0 +1,578 @@
+{
+  "productInfo" : {
+    "company" : "HighByte",
+    "product" : "IntelligenceHub",
+    "version" : "development.build",
+    "build" : "Not Set",
+    "stage" : "Dev"
+  },
+  "project" : {
+    "version" : 15,
+    "connections" : [ {
+      "name" : "i3X",
+      "uri" : "i3x://i3x",
+      "tags" : [ "i3X" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "authentication" : {
+          "type" : "Bearer Token",
+          "options" : {
+            "encryptToken" : {
+              "type" : "Reference",
+              "value" : "i3X"
+            }
+          }
+        },
+        "baseURL" : "http://localhost:8885/i3x/v1",
+        "ignoreCertificate" : false,
+        "subscriptionMode" : {
+          "options" : {
+            "pollInterval" : {
+              "duration" : 1,
+              "units" : "Seconds"
+            }
+          },
+          "type" : "Stream"
+        }
+      }
+    } ],
+    "conditions" : [ ],
+    "inputs" : [ {
+      "name" : "Locations",
+      "connection" : "i3X",
+      "type" : "i3x",
+      "qualifier" : {
+        "inputType" : "CurrentValue",
+        "elementSource" : {
+          "type" : "ObjectType",
+          "elementId" : "Site1.AMRs.AMR1",
+          "cacheInterval" : {
+            "duration" : 1,
+            "units" : "Hours"
+          },
+          "elementIds" : [ ],
+          "objectTypeId" : "type:Locations"
+        },
+        "includeMetadata" : true,
+        "maxDepth" : 1
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "SensorData",
+      "connection" : "i3X",
+      "type" : "i3x",
+      "qualifier" : {
+        "inputType" : "CurrentValue",
+        "elementSource" : {
+          "type" : "ObjectType",
+          "elementId" : "Site1.AMRs.AMR1",
+          "cacheInterval" : {
+            "duration" : 1,
+            "units" : "Hours"
+          },
+          "elementIds" : [ ],
+          "objectTypeId" : "type:SensorData"
+        },
+        "includeMetadata" : true,
+        "maxDepth" : 1
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "Test_Instance",
+      "connection" : "i3X",
+      "type" : "i3x",
+      "qualifier" : {
+        "inputType" : "CurrentValue",
+        "elementSource" : {
+          "type" : "Object",
+          "elementId" : "HighByte.Instance.Test_Instance",
+          "cacheInterval" : {
+            "duration" : 1,
+            "units" : "Hours"
+          },
+          "elementIds" : [ ],
+          "objectTypeId" : "type:SensorData"
+        },
+        "includeMetadata" : true,
+        "maxDepth" : 1
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    } ],
+    "outputs" : [ ],
+    "modeling" : {
+      "models" : [ {
+        "name" : "HistoryReadsResults",
+        "description" : "Created from payload:\nAnyValue(type=ComplexData, value={\"elementId\":\"string\",\"value\":42,\"quality\":\"Good\",\"timestamp\":\"2026-01-01T00:05:00Z\"})",
+        "tags" : [ "i3X" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "elementId",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Int64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "quality",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "timestamp",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "WriteResults",
+        "description" : "Created from payload:\nAnyValue(type=ComplexData, value={\"elementId\":\"string\",\"success\":true,\"message\":\"\"})",
+        "tags" : [ "i3X" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "elementId",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "success",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Boolean"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "message",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        } ],
+        "modelVersion" : ""
+      } ],
+      "instances" : [ {
+        "name" : "Test_Instance",
+        "tags" : [ "i3X" ],
+        "model" : "HistoryReadsResults",
+        "rootValueAs" : "Object",
+        "template" : {
+          "type" : "Off"
+        },
+        "executeMode" : "V4",
+        "initExpression" : "",
+        "attributes" : [ {
+          "name" : "elementId",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Empty"
+            }
+          },
+          "defaultValue" : "ABC"
+        }, {
+          "name" : "value",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Empty"
+            }
+          },
+          "defaultValue" : 222
+        }, {
+          "name" : "quality",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Empty"
+            }
+          },
+          "defaultValue" : "Good"
+        }, {
+          "name" : "timestamp",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Empty"
+            }
+          },
+          "defaultValue" : "2026-01-01T00:05:00Z"
+        } ],
+        "parameters" : {
+          "type" : "EmptyParameters"
+        }
+      } ]
+    },
+    "pipelines" : [ {
+      "name" : "i3XHistoryReads",
+      "tags" : [ "i3X" ],
+      "inputStages" : [ "FirstIndex" ],
+      "stages" : [ {
+        "name" : "AddReadStageHere",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 135
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setValue(event.value);"
+        },
+        "outputs" : [ "Model" ]
+      }, {
+        "name" : "FirstIndex",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[0]"
+        },
+        "outputs" : [ "Filter" ]
+      }, {
+        "name" : "Filter",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "elementId"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "filtered"
+        },
+        "outputs" : [ "TestMessage" ]
+      }, {
+        "name" : "TestMessage",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const message = [\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 222,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T01:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T13:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T14:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T15:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T16:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T17:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T18:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T19:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T20:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T21:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T22:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T02:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T23:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T01:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T02:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T03:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T04:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T06:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T08:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T11:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T12:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T13:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T03:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T13:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T14:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T15:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T16:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T17:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T18:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T19:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T20:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T21:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T22:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T04:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-02T23:00:00.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T06:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T08:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T11:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T12:00:33.000Z\"\r\n\t\t},\r\n\t\t{\r\n\t\t\t\"elementId\": \"Weather.Portland.Forecast\",\r\n\t\t\t\"value\": 225,\r\n\t\t\t\"quality\": \"Good\",\r\n\t\t\t\"timestamp\": \"2025-01-01T13:00:33.000Z\"\r\n\t\t}\r\n\t]\r\n\r\nstage.setValue(message);"
+        },
+        "outputs" : [ "Model_1" ]
+      }, {
+        "name" : "Model_1",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "HistoryReadsResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.filtered.elementId"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].value"
+            }
+          }, {
+            "name" : "quality",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].quality"
+            }
+          }, {
+            "name" : "timestamp",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].timestamp"
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Model",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 135
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "HistoryReadsResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.filtered.elementId"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].ProducedQuantity"
+            }
+          }, {
+            "name" : "quality",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            },
+            "defaultValue" : "Good"
+          }, {
+            "name" : "timestamp",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].ProductionDate"
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "i3XWrites",
+      "tags" : [ "i3X" ],
+      "inputStages" : [ "AddTransformAndWriteStagesHere" ],
+      "stages" : [ {
+        "name" : "AddTransformAndWriteStagesHere",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setValue(event.value);"
+        },
+        "outputs" : [ "Model" ]
+      }, {
+        "name" : "Model",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WriteResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].elementId"
+            }
+          }, {
+            "name" : "success",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            },
+            "defaultValue" : true
+          }, {
+            "name" : "message",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    } ],
+    "tags" : [ {
+      "name" : "i3X"
+    } ],
+    "functions" : [ ],
+    "namespace" : [ ],
+    "lookupMap" : [ ],
+    "servers" : {
+      "i3x" : {
+        "historyReadPipeline" : {
+          "type" : "Empty"
+        },
+        "writePipeline" : {
+          "type" : "Empty"
+        }
+      }
+    }
+  },
+  "network" : {
+    "version" : 0,
+    "groups" : [ ],
+    "hubs" : [ ]
+  }
+}
