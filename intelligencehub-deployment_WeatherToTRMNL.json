@@ -1,0 +1,1749 @@
+{
+  "productInfo" : {
+    "company" : "HighByte",
+    "product" : "IntelligenceHub",
+    "version" : "development.build",
+    "build" : "Not Set",
+    "stage" : "Dev"
+  },
+  "project" : {
+    "version" : 15,
+    "connections" : [ {
+      "name" : "NOAA_RestAPI",
+      "uri" : "rest.client://Weather",
+      "tags" : [ "WeatherToTRMNL" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "authentication" : {
+          "type" : "None",
+          "options" : { }
+        },
+        "baseURL" : "https://forecast.weather.gov/"
+      }
+    }, {
+      "name" : "TRMNL_RestAPI",
+      "uri" : "rest.client://Weather",
+      "tags" : [ "WeatherToTRMNL" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 10000,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "authentication" : {
+          "type" : "None",
+          "options" : { }
+        },
+        "baseURL" : "https://usetrmnl.com"
+      }
+    } ],
+    "conditions" : [ ],
+    "inputs" : [ {
+      "name" : "PortlandWeather",
+      "connection" : "NOAA_RestAPI",
+      "type" : "rest.client",
+      "qualifier" : {
+        "acceptType" : "*/*",
+        "method" : "GET",
+        "contentType" : "application/json",
+        "includeMetadata" : false,
+        "endpointURL" : "MapClick.php?lat=43.6894&lon=-70.2865&FcstType=digitalDWML",
+        "isFile" : false
+      },
+      "cacheLifetime" : {
+        "enabled" : true,
+        "interval" : {
+          "duration" : 15,
+          "units" : "Minutes"
+        }
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    } ],
+    "outputs" : [ ],
+    "modeling" : {
+      "models" : [ {
+        "name" : "WeatherForTRMNL",
+        "tags" : [ "WeatherToTRMNL" ],
+        "attributes" : [ {
+          "attributeType" : "Object",
+          "name" : "merge_variables",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "time",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "DateTime"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "temperature",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "windspeed",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "windgust",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "winddirection",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "forecast",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "location",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Object",
+            "name" : "temperatures",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "name",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            }, {
+              "attributeType" : "Internal",
+              "name" : "data",
+              "nullable" : false,
+              "required" : false,
+              "array" : true,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            } ]
+          }, {
+            "attributeType" : "Object",
+            "name" : "windspeeds",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "name",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            }, {
+              "attributeType" : "Internal",
+              "name" : "data",
+              "nullable" : false,
+              "required" : false,
+              "array" : true,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            } ]
+          }, {
+            "attributeType" : "Object",
+            "name" : "windgusts",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "name",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            }, {
+              "attributeType" : "Internal",
+              "name" : "data",
+              "nullable" : false,
+              "required" : false,
+              "array" : true,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            } ]
+          }, {
+            "attributeType" : "Object",
+            "name" : "winddirections",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "name",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            }, {
+              "attributeType" : "Internal",
+              "name" : "data",
+              "nullable" : false,
+              "required" : false,
+              "array" : true,
+              "internalType" : {
+                "variant" : "Any"
+              }
+            } ]
+          } ]
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "WeatherForTRMNLData",
+        "tags" : [ "WeatherToTRMNL" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "data",
+          "nullable" : false,
+          "required" : false,
+          "array" : true,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      } ],
+      "instances" : [ ]
+    },
+    "pipelines" : [ {
+      "name" : "SendForecastToTRMNL",
+      "tags" : [ "WeatherToTRMNL" ],
+      "inputStages" : [ "Location" ],
+      "stages" : [ {
+        "name" : "WeatherForTRMNL",
+        "display" : {
+          "position" : {
+            "x" : 8640,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNL",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "merge_variables",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            },
+            "attributes" : [ {
+              "name" : "time",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.Forecast.Periods[0].Time;"
+              }
+            }, {
+              "name" : "temperature",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.Forecast.Periods[0].Temperature;"
+              }
+            }, {
+              "name" : "windspeed",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.Forecast.Periods[0].WindSpeed;"
+              }
+            }, {
+              "name" : "windgust",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "winddirection",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.Forecast.Periods[0].WindDirection;"
+              }
+            }, {
+              "name" : "forecast",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.Forecast.Periods[0].Forecast;"
+              }
+            }, {
+              "name" : "location",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.Location;"
+              }
+            }, {
+              "name" : "temperatures",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return \"Temperatures\""
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.Temperatures.data;"
+                }
+              } ]
+            }, {
+              "name" : "windspeeds",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return \"WindSpeeds\";"
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.WindSpeeds.data;"
+                }
+              } ]
+            }, {
+              "name" : "windgusts",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : ""
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : ""
+                }
+              } ]
+            }, {
+              "name" : "winddirections",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return \"WindDirections\";"
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.WindDirections.data;"
+                }
+              } ]
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "TRMNL" ]
+      }, {
+        "name" : "Periods",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "containsFilter",
+            "filterText" : "Periods",
+            "recursive" : false
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "Forecast"
+        },
+        "outputs" : [ "First12ForcastForTemperature" ]
+      }, {
+        "name" : "ForEachWindSpeed",
+        "display" : {
+          "position" : {
+            "x" : 4090,
+            "y" : -105
+          },
+          "size" : {
+            "width" : 1000,
+            "height" : 300
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "WindSpeed" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "WindSpeeds" ]
+      }, {
+        "name" : "ForEachWindDirection",
+        "display" : {
+          "position" : {
+            "x" : 6590,
+            "y" : -105
+          },
+          "size" : {
+            "width" : 1000,
+            "height" : 300
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "WindDirection" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "WindDirections" ]
+      }, {
+        "name" : "WindDirections",
+        "display" : {
+          "position" : {
+            "x" : 7740,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNLData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "data",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WindDirectionsFilter" ]
+      }, {
+        "name" : "First12ForcastForTemperature",
+        "display" : {
+          "position" : {
+            "x" : 1136,
+            "y" : -8
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.metadata.Forecast.Periods[[0..11]]"
+        },
+        "outputs" : [ "ForEachTemperature" ]
+      }, {
+        "name" : "TemperaturesFilter",
+        "display" : {
+          "position" : {
+            "x" : 3190,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "Temperatures"
+        },
+        "outputs" : [ "First12ForecastForWindSpeed" ]
+      }, {
+        "name" : "WindSpeedsFilter",
+        "display" : {
+          "position" : {
+            "x" : 5690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "WindSpeeds"
+        },
+        "outputs" : [ "First120ForecastForWindDirections" ]
+      }, {
+        "name" : "Temperatures",
+        "display" : {
+          "position" : {
+            "x" : 2740,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNLData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "data",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "TemperaturesFilter" ]
+      }, {
+        "name" : "WindSpeeds",
+        "display" : {
+          "position" : {
+            "x" : 5240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNLData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "data",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WindSpeedsFilter" ]
+      }, {
+        "name" : "First12ForecastForWindSpeed",
+        "display" : {
+          "position" : {
+            "x" : 3640,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.metadata.Forecast.Periods[[0..11]]"
+        },
+        "outputs" : [ "ForEachWindSpeed" ]
+      }, {
+        "name" : "WindDirectionsFilter",
+        "display" : {
+          "position" : {
+            "x" : 8190,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "WindDirections"
+        },
+        "outputs" : [ "WeatherForTRMNL" ]
+      }, {
+        "name" : "Location",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const s = event.metadata.query._path;\r\nconst parts = s.split(\".\");        // [\"Weather\", \"Portland\", \"Forecast\"]\r\nconst middle = parts[1];           // \"Portland\"\r\nstage.setMetadata(\"Location\", middle);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "Periods" ]
+      }, {
+        "name" : "First120ForecastForWindDirections",
+        "display" : {
+          "position" : {
+            "x" : 6140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.metadata.Forecast.Periods[[0..11]]"
+        },
+        "outputs" : [ "ForEachWindDirection" ]
+      }, {
+        "name" : "TRMNL",
+        "display" : {
+          "position" : {
+            "x" : 9090,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.TRMNL_RestAPI}}",
+          "eventPath" : "",
+          "connectionType" : "rest.client",
+          "qualifier" : {
+            "endpointURL" : "/api/custom_plugins/eaaa779a-36f9-422a-8913-a6f9acb3371f",
+            "method" : "POST",
+            "bodyType" : "defaultjson",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "ignore"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ForEachTemperature",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : -105
+          },
+          "size" : {
+            "width" : 1000,
+            "height" : 300
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "Temperature" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "Temperatures" ]
+      }, {
+        "name" : "WindSpeed",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindSpeed"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000,$number($replace(WindSpeed, ' mph', '.0'))]"
+        },
+        "outputs" : [ "ReturnWindSpeed" ]
+      }, {
+        "name" : "ReturnWindSpeed",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindSpeed"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ReturnWindDirection",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindDirection"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "WindDirection",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindDirection"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000, $lookup({'NE':5.0,'E':9.0,'SE':14.0,'S':18.0,'SW':23.0,'W':27.0,'NW':32.0,'N':36.0,'':0.0},WindDirection)]"
+        },
+        "outputs" : [ "ReturnWindDirection" ]
+      }, {
+        "name" : "Temperature",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachTemperature"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000,Temperature]"
+        },
+        "outputs" : [ "ReturnTemperature" ]
+      }, {
+        "name" : "ReturnTemperature",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachTemperature"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "NamespaceTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerNamespace",
+          "enabled" : true,
+          "query" : {
+            "from" : [ "Weather.Portland.Forecast.**" ],
+            "where" : "",
+            "select" : {
+              "what" : [ "value" ],
+              "as" : "List",
+              "delim" : "."
+            }
+          },
+          "pollInterval" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "SendNOAAForecastToTRMNL",
+      "tags" : [ "WeatherToTRMNL" ],
+      "inputStages" : [ "Read" ],
+      "stages" : [ {
+        "name" : "WindDirectionsFilter",
+        "display" : {
+          "position" : {
+            "x" : 13840,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "WindDirections"
+        },
+        "outputs" : [ "WeatherForTRMNL" ]
+      }, {
+        "name" : "Temperatures",
+        "display" : {
+          "position" : {
+            "x" : 3640,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNLData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "data",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "TemperaturesFilter" ]
+      }, {
+        "name" : "CombineGustArrays",
+        "display" : {
+          "position" : {
+            "x" : 7940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.$map(Time, function($t, $i) {\r\n  { \"Time\": $t, \"Gust\": Gust[$i] }\r\n})"
+        },
+        "outputs" : [ "ForEachGust" ]
+      }, {
+        "name" : "CombineWeatherArrays",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.$map(Time, function($t, $i) {\r\n  { \"Time\": $t, \"Temperature\": Temperature[$i] }\r\n})"
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "FirstWindDirections",
+        "display" : {
+          "position" : {
+            "x" : 11340,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n  \"Time\": event.metadata.Weather.dwml.data.`time-layout`.`start-valid-time`[[1..48]], \r\n  \"Direction\": event.metadata.Weather.dwml.data.parameters.direction.value[[1..48]]\r\n}"
+        },
+        "outputs" : [ "CombineDirectionArrays" ]
+      }, {
+        "name" : "FirstWindGusts",
+        "display" : {
+          "position" : {
+            "x" : 7490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n  \"Time\": event.metadata.Weather.dwml.data.`time-layout`.`start-valid-time`[[1..48]], \r\n  \"Gust\": event.metadata.Weather.dwml.data.parameters.`wind-speed`[type='gust'].value[[1..48]]\r\n}"
+        },
+        "outputs" : [ "CombineGustArrays" ]
+      }, {
+        "name" : "TRMNL",
+        "display" : {
+          "position" : {
+            "x" : 14740,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.TRMNL_RestAPI}}",
+          "eventPath" : "",
+          "connectionType" : "rest.client",
+          "qualifier" : {
+            "endpointURL" : "/api/custom_plugins/3ce868e6-d6f1-4854-a167-75f177dd504d",
+            "method" : "POST",
+            "bodyType" : "defaultjson",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "ignore"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "CombineDirectionArrays",
+        "display" : {
+          "position" : {
+            "x" : 11790,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.$map(Time, function($t, $i) {\r\n  { \"Time\": $t, \"Direction\": Direction[$i] }\r\n})"
+        },
+        "outputs" : [ "ForEachWindDirection" ]
+      }, {
+        "name" : "WeatherForTRMNL",
+        "display" : {
+          "position" : {
+            "x" : 14294,
+            "y" : 6
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNL",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "merge_variables",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            },
+            "attributes" : [ {
+              "name" : "time",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "const firstIndex = event.metadata.Temperatures.data[0];\nreturn Object.values(firstIndex)[0];"
+              }
+            }, {
+              "name" : "temperature",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "const firstIndex = event.metadata.Temperatures.data[0];\nreturn Object.values(firstIndex)[1];"
+              }
+            }, {
+              "name" : "windspeed",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "const firstIndex = event.metadata.WindSpeeds.data[0];\r\nreturn Object.values(firstIndex)[1];"
+              }
+            }, {
+              "name" : "windgust",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "const firstIndex = event.metadata.Gusts.data[0];\nreturn Object.values(firstIndex)[1];"
+              }
+            }, {
+              "name" : "winddirection",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "const firstIndex = event.metadata.WindDirections.data[0];\nreturn Object.values(firstIndex)[1] * 10;"
+              }
+            }, {
+              "name" : "forecast",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return \"NONE\";"
+              }
+            }, {
+              "name" : "location",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.Location;"
+              }
+            }, {
+              "name" : "temperatures",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return \"Temperatures\""
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.Temperatures.data;"
+                }
+              } ]
+            }, {
+              "name" : "windspeeds",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return \"WindSpeeds\";"
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.WindSpeeds.data;"
+                }
+              } ]
+            }, {
+              "name" : "windgusts",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return \"WindGusts\";"
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.Gusts.data;"
+                }
+              } ]
+            }, {
+              "name" : "winddirections",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              },
+              "attributes" : [ {
+                "name" : "name",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return \"WindDirections\";"
+                }
+              }, {
+                "name" : "data",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.WindDirections.data;"
+                }
+              } ]
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "TRMNL" ]
+      }, {
+        "name" : "Gusts",
+        "display" : {
+          "position" : {
+            "x" : 10440,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNLData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "data",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "GustsFilter" ]
+      }, {
+        "name" : "FirstTemperatures",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n  \"Time\": event.metadata.Weather.dwml.data.`time-layout`.`start-valid-time`[[1..48]], \r\n  \"Temperature\": event.metadata.Weather.dwml.data.parameters.temperature[type='hourly'].value[[1..48]]\r\n}"
+        },
+        "outputs" : [ "CombineWeatherArrays" ]
+      }, {
+        "name" : "CombineWindArrays",
+        "display" : {
+          "position" : {
+            "x" : 4990,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.$map(Time, function($t, $i) {\r\n  { \"Time\": $t, \"WindSpeed\": WindSpeed[$i] }\r\n})"
+        },
+        "outputs" : [ "ForEachWindSpeed" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : -105
+          },
+          "size" : {
+            "width" : 1000,
+            "height" : 300
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "Temperature" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "Temperatures" ]
+      }, {
+        "name" : "Location",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"Location\", event.value.dwml.head.source[\"production-center\"]);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "Weather" ]
+      }, {
+        "name" : "ForEachGust",
+        "display" : {
+          "position" : {
+            "x" : 8390,
+            "y" : -117
+          },
+          "size" : {
+            "width" : 1900,
+            "height" : 325
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SetGustNil" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "Gusts" ]
+      }, {
+        "name" : "Read",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PortlandWeather",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "NOAA_RestAPI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "Location" ]
+      }, {
+        "name" : "ForEachWindDirection",
+        "display" : {
+          "position" : {
+            "x" : 12240,
+            "y" : -105
+          },
+          "size" : {
+            "width" : 1000,
+            "height" : 300
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "WindDirection" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "WindDirections" ]
+      }, {
+        "name" : "GustsFilter",
+        "display" : {
+          "position" : {
+            "x" : 10890,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "Gusts"
+        },
+        "outputs" : [ "FirstWindDirections" ]
+      }, {
+        "name" : "FirstWindSpeeds",
+        "display" : {
+          "position" : {
+            "x" : 4540,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n  \"Time\": event.metadata.Weather.dwml.data.`time-layout`.`start-valid-time`[[1..48]], \r\n  \"WindSpeed\": event.metadata.Weather.dwml.data.parameters.`wind-speed`[type='sustained'].value[[1..48]]\r\n}"
+        },
+        "outputs" : [ "CombineWindArrays" ]
+      }, {
+        "name" : "WindSpeedsFilter",
+        "display" : {
+          "position" : {
+            "x" : 7040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "WindSpeeds"
+        },
+        "outputs" : [ "FirstWindGusts" ]
+      }, {
+        "name" : "WindDirections",
+        "display" : {
+          "position" : {
+            "x" : 13390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNLData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "data",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WindDirectionsFilter" ]
+      }, {
+        "name" : "Weather",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "dwml.data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "Weather"
+        },
+        "outputs" : [ "FirstTemperatures" ]
+      }, {
+        "name" : "ForEachWindSpeed",
+        "display" : {
+          "position" : {
+            "x" : 5440,
+            "y" : -105
+          },
+          "size" : {
+            "width" : 1000,
+            "height" : 300
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "WindSpeed" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "WindSpeeds" ]
+      }, {
+        "name" : "WindSpeeds",
+        "display" : {
+          "position" : {
+            "x" : 6590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WeatherForTRMNLData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "data",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WindSpeedsFilter" ]
+      }, {
+        "name" : "TemperaturesFilter",
+        "display" : {
+          "position" : {
+            "x" : 4090,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "data"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "Temperatures"
+        },
+        "outputs" : [ "FirstWindSpeeds" ]
+      }, {
+        "name" : "Temperature",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000,Temperature]"
+        },
+        "outputs" : [ "ReturnTemperature" ]
+      }, {
+        "name" : "ReturnTemperature",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Gust",
+        "display" : {
+          "position" : {
+            "x" : 1100,
+            "y" : 50
+          },
+          "metadata" : {
+            "parent" : "ForEachGust"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000,$number(Gust)]"
+        },
+        "outputs" : [ "ReturnGust" ]
+      }, {
+        "name" : "NotNil",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 117
+          },
+          "metadata" : {
+            "parent" : "ForEachGust"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.value.GustNil===false)",
+            "outputs" : [ "Gust" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "Gust0" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SetGustNil",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 117
+          },
+          "metadata" : {
+            "parent" : "ForEachGust"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "function isNil(value) {\r\n  // Handle the case where the value is a JSON string like \"{\\\"xsi:nil\\\":true}\"\r\n  let obj = value;\r\n  if (typeof value === \"string\") {\r\n    try {\r\n      obj = JSON.parse(value);\r\n    } catch (e) {\r\n      return false; // not parseable, treat as a normal string value\r\n    }\r\n  }\r\n  return !!(obj && obj[\"xsi:nil\"] === true);\r\n}\r\n\r\nevent.value.GustNil = isNil(event.value.Gust);\r\n\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "NotNil" ]
+      }, {
+        "name" : "Gust0",
+        "display" : {
+          "position" : {
+            "x" : 1100,
+            "y" : 185
+          },
+          "metadata" : {
+            "parent" : "ForEachGust"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000,0]"
+        },
+        "outputs" : [ "ReturnGust" ]
+      }, {
+        "name" : "ReturnGust",
+        "display" : {
+          "position" : {
+            "x" : 1550,
+            "y" : 117
+          },
+          "metadata" : {
+            "parent" : "ForEachGust"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "WindDirection",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindDirection"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000, $floor(Direction/10.0)]"
+        },
+        "outputs" : [ "ReturnWindDirection" ]
+      }, {
+        "name" : "ReturnWindDirection",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindDirection"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ReturnWindSpeed",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindSpeed"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "WindSpeed",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEachWindSpeed"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.[$toMillis(Time) - 18000000,$number(WindSpeed)]"
+        },
+        "outputs" : [ "ReturnWindSpeed" ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CronTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCron",
+          "enabled" : true,
+          "logging" : "off",
+          "schedule" : "0 */1 * * *",
+          "timezone" : "local"
+        }
+      }, {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
+          "interval" : {
+            "duration" : 1,
+            "units" : "Days"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    } ],
+    "tags" : [ {
+      "name" : "WeatherToTRMNL"
+    } ],
+    "functions" : [ ],
+    "namespace" : [ ],
+    "lookupMap" : [ ],
+    "servers" : {
+      "i3x" : {
+        "historyReadPipeline" : {
+          "type" : "Empty"
+        },
+        "writePipeline" : {
+          "type" : "Empty"
+        }
+      }
+    }
+  },
+  "network" : {
+    "version" : 0,
+    "groups" : [ ],
+    "hubs" : [ ]
+  }
+}
