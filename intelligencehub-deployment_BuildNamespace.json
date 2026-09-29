@@ -9,42 +9,6 @@
   "project" : {
     "version" : 15,
     "connections" : [ {
-      "name" : "BuildNamespace_MQTT",
-      "uri" : "mqtt://localhost:1885",
-      "tags" : [ "BuildNamespace" ],
-      "writes" : {
-        "flattenModeledValues" : false
-      },
-      "writeThrottle" : {
-        "enabled" : false,
-        "maxBatchSizePerTarget" : 1000,
-        "batchDelay" : {
-          "duration" : 20,
-          "units" : "Milliseconds"
-        }
-      },
-      "subscriptions" : { },
-      "storeForward" : {
-        "enabled" : false,
-        "maxEntries" : 100,
-        "waitOnFailureInterval" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "settings" : {
-        "connectionTimeoutSeconds" : 10,
-        "keepAliveSeconds" : 60,
-        "requestTimeoutMS" : 5000,
-        "cleanSession" : true,
-        "ssl" : false,
-        "redundantBrokers" : [ ],
-        "inputDiscovery" : "#",
-        "maxInflight" : 1000,
-        "mcpEnabled" : "disabled",
-        "maxMessagesReceived" : 0
-      }
-    }, {
       "name" : "BuildNamespace_PI",
       "uri" : "osisoft.afsdk://localhost:45290",
       "tags" : [ "BuildNamespace" ],
@@ -131,14 +95,20 @@
     } ],
     "conditions" : [ ],
     "inputs" : [ {
-      "name" : "FromPath",
-      "connection" : "BuildNamespace_MQTT",
-      "type" : "mqtt",
+      "name" : "AssetCurentValue",
+      "connection" : "BuildNamespace_PI",
+      "type" : "osisoft.afsdk",
       "qualifier" : {
-        "inputType" : "LastPublish",
-        "payloadType" : "json",
-        "qos" : 0,
-        "topic" : "{{this.Path}}"
+        "type" : "asset",
+        "options" : {
+          "database" : "ReactorsDemo",
+          "query" : "Name: '{{this.Name}}' Parent: '{{this.Parent}}'",
+          "get" : "currentValue",
+          "index" : false,
+          "includeMetaData" : false,
+          "includeChildren" : false,
+          "indexWindow" : ""
+        }
       },
       "cacheLifetime" : {
         "enabled" : false
@@ -154,39 +124,27 @@
           "tags" : [ ],
           "attributes" : [ {
             "attributeType" : "Internal",
-            "name" : "Path",
+            "name" : "Name",
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "Site1/ProductionLine/PLC_1",
+            "defaultValue" : "Plant",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Parent",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "",
             "internalType" : {
               "variant" : "String"
             }
           } ],
           "modelVersion" : ""
         }
-      }
-    }, {
-      "name" : "RootBrowse",
-      "connection" : "BuildNamespace_MQTT",
-      "type" : "mqtt",
-      "qualifier" : {
-        "inputType" : "Branch",
-        "payloadType" : "json",
-        "qos" : 0,
-        "topic" : "#",
-        "includeTopic" : false,
-        "type" : "Tag"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
       }
     }, {
       "name" : "AssetCurrentValue",
@@ -366,6 +324,75 @@
         }
       }
     }, {
+      "name" : "PointHistoricalValues",
+      "connection" : "BuildNamespace_PI",
+      "type" : "osisoft.afsdk",
+      "qualifier" : {
+        "type" : "point",
+        "options" : {
+          "database" : "ReactorsDemo",
+          "query" : "Name: '{{this.Name}}' Parent: '{{this.Parent}}'",
+          "get" : "rawValues",
+          "index" : false,
+          "includeMetaData" : false,
+          "includeChildren" : false,
+          "indexWindow" : "",
+          "useReference" : false,
+          "points" : [ "{{this.Point}}" ],
+          "calcBasis" : "timeWeighted",
+          "format" : "JSON",
+          "boundaryType" : "inside",
+          "startTime" : "{{this.StartTime}}",
+          "endTime" : "{{this.EndTime}}"
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Point",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "OSIDemo_Line 1.Outlet Pump.Suction Pressure.f21a7d7d-b550-5a02-01ce-e0fd3edba872",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "StartTime",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "2026-08-28T21:43:54.790Z",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "EndTime",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "2026-08-28T22:43:54.790Z",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
       "name" : "PartialImport",
       "connection" : "BuildNamespace_ProjectAPI",
       "type" : "rest.client",
@@ -431,111 +458,6 @@
     "outputs" : [ ],
     "modeling" : {
       "models" : [ {
-        "name" : "JSONataHelper",
-        "tags" : [ "BuildNamespace" ],
-        "attributes" : [ {
-          "attributeType" : "Internal",
-          "name" : "expression",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "data",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        } ],
-        "modelVersion" : ""
-      }, {
-        "name" : "Namespace_MQTT",
-        "tags" : [ "BuildNamespace" ],
-        "attributes" : [ {
-          "attributeType" : "Internal",
-          "name" : "id",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "name",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "parentNamespaceId",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        }, {
-          "attributeType" : "Object",
-          "name" : "reference",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "type",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "connectionName",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "name",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Object",
-            "name" : "params",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "attributes" : [ {
-              "attributeType" : "Internal",
-              "name" : "Path",
-              "nullable" : false,
-              "required" : false,
-              "array" : false,
-              "internalType" : {
-                "variant" : "Any"
-              }
-            } ]
-          } ]
-        } ],
-        "modelVersion" : ""
-      }, {
         "name" : "Namespace_PI",
         "tags" : [ "BuildNamespace" ],
         "attributes" : [ {
@@ -673,254 +595,6 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          } ]
-        } ],
-        "modelVersion" : ""
-      }, {
-        "name" : "Project_MQTT",
-        "tags" : [ "BuildNamespace" ],
-        "attributes" : [ {
-          "attributeType" : "Object",
-          "name" : "productInfo",
-          "nullable" : false,
-          "required" : true,
-          "array" : false,
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "company",
-            "nullable" : false,
-            "required" : true,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "product",
-            "nullable" : false,
-            "required" : true,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "version",
-            "nullable" : false,
-            "required" : true,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "build",
-            "nullable" : false,
-            "required" : true,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "stage",
-            "nullable" : false,
-            "required" : true,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          } ]
-        }, {
-          "attributeType" : "Object",
-          "name" : "project",
-          "nullable" : false,
-          "required" : true,
-          "array" : false,
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "version",
-            "nullable" : false,
-            "required" : true,
-            "array" : false,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "connections",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "inputs",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "outputs",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Object",
-            "name" : "modeling",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "attributes" : [ {
-              "attributeType" : "Internal",
-              "name" : "models",
-              "nullable" : false,
-              "required" : false,
-              "array" : true,
-              "internalType" : {
-                "variant" : "Any"
-              }
-            }, {
-              "attributeType" : "Internal",
-              "name" : "instances",
-              "nullable" : false,
-              "required" : false,
-              "array" : true,
-              "internalType" : {
-                "variant" : "Any"
-              }
-            } ]
-          }, {
-            "attributeType" : "Internal",
-            "name" : "conditions",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "functions",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "tags",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "pipelines",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Modeled",
-            "name" : "namespace",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "model" : "Namespace_MQTT"
-          }, {
-            "attributeType" : "Internal",
-            "name" : "lookupMap",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Object",
-            "name" : "servers",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "attributes" : [ {
-              "attributeType" : "Object",
-              "name" : "i3x",
-              "nullable" : false,
-              "required" : false,
-              "array" : false,
-              "attributes" : [ {
-                "attributeType" : "Object",
-                "name" : "historyReadPipeline",
-                "nullable" : false,
-                "required" : false,
-                "array" : false,
-                "attributes" : [ {
-                  "attributeType" : "Internal",
-                  "name" : "type",
-                  "nullable" : false,
-                  "required" : false,
-                  "array" : false,
-                  "internalType" : {
-                    "variant" : "Any"
-                  }
-                } ]
-              }, {
-                "attributeType" : "Object",
-                "name" : "writePipeline",
-                "nullable" : false,
-                "required" : false,
-                "array" : false,
-                "attributes" : [ {
-                  "attributeType" : "Internal",
-                  "name" : "type",
-                  "nullable" : false,
-                  "required" : false,
-                  "array" : false,
-                  "internalType" : {
-                    "variant" : "Any"
-                  }
-                } ]
-              } ]
-            } ]
-          } ]
-        }, {
-          "attributeType" : "Object",
-          "name" : "network",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "groups",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
-            "internalType" : {
-              "variant" : "Any"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "hubs",
-            "nullable" : false,
-            "required" : false,
-            "array" : true,
             "internalType" : {
               "variant" : "Any"
             }
@@ -1179,914 +853,6 @@
       "instances" : [ ]
     },
     "pipelines" : [ {
-      "name" : "BuildNamespace_MQTTSource",
-      "tags" : [ "BuildNamespace" ],
-      "inputStages" : [ "Read" ],
-      "stages" : [ {
-        "name" : "Read",
-        "display" : {
-          "position" : {
-            "x" : 345,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "RootBrowse",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "BuildNamespace_MQTT"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "Filter" ]
-      }, {
-        "name" : "JSONataRemoveEmpty",
-        "display" : {
-          "position" : {
-            "x" : 5995,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.$filter($, function($v) { $boolean($v) })"
-        },
-        "outputs" : [ "Project" ]
-      }, {
-        "name" : "While",
-        "display" : {
-          "position" : {
-            "x" : 1245,
-            "y" : -275
-          },
-          "size" : {
-            "width" : 4600,
-            "height" : 640
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".WhileLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SetMetadata" ],
-          "stageTimeout" : {
-            "duration" : 5,
-            "units" : "Minutes"
-          },
-          "expression" : "return loop.metadata.writeNamespaces===false;",
-          "loopValue" : "ACCUMULATED"
-        },
-        "outputs" : [ "JSONataRemoveEmpty" ]
-      }, {
-        "name" : "PartialImport",
-        "display" : {
-          "position" : {
-            "x" : 6895,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ "JavaScript" ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "PartialImport",
-            "path" : "",
-            "params" : {
-              "Body" : "{{event.value}}"
-            },
-            "connectionName" : "BuildNamespace_ProjectAPI"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "JavaScript" ]
-      }, {
-        "name" : "Project",
-        "display" : {
-          "position" : {
-            "x" : 6445,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "Project_MQTT",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "productInfo",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            },
-            "attributes" : [ {
-              "name" : "company",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "defaultValue" : "HighByte"
-            }, {
-              "name" : "product",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "defaultValue" : "IntelligenceHub"
-            }, {
-              "name" : "version",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "defaultValue" : "4.5.0"
-            }, {
-              "name" : "build",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "defaultValue" : "NotSet"
-            }, {
-              "name" : "stage",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "defaultValue" : "Release"
-            } ]
-          }, {
-            "name" : "project",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            },
-            "attributes" : [ {
-              "name" : "version",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "defaultValue" : 12
-            }, {
-              "name" : "connections",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "inputs",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "outputs",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "modeling",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "attributes" : [ {
-                "name" : "models",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                }
-              }, {
-                "name" : "instances",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                }
-              } ]
-            }, {
-              "name" : "conditions",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "functions",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "tags",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "pipelines",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "namespace",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : "return event.value;"
-              },
-              "attributes" : [ {
-                "name" : "id",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                }
-              }, {
-                "name" : "name",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                }
-              }, {
-                "name" : "parentNamespaceId",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                }
-              }, {
-                "name" : "reference",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                },
-                "attributes" : [ {
-                  "name" : "type",
-                  "expression" : {
-                    "type" : "JavaScript",
-                    "expression" : ""
-                  }
-                }, {
-                  "name" : "connectionName",
-                  "expression" : {
-                    "type" : "JavaScript",
-                    "expression" : ""
-                  }
-                }, {
-                  "name" : "name",
-                  "expression" : {
-                    "type" : "JavaScript",
-                    "expression" : ""
-                  }
-                }, {
-                  "name" : "params",
-                  "expression" : {
-                    "type" : "JavaScript",
-                    "expression" : ""
-                  },
-                  "attributes" : [ {
-                    "name" : "Path",
-                    "expression" : {
-                      "type" : "JavaScript",
-                      "expression" : ""
-                    }
-                  } ]
-                } ]
-              } ]
-            }, {
-              "name" : "lookupMap",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "servers",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "attributes" : [ {
-                "name" : "i3x",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                },
-                "attributes" : [ {
-                  "name" : "historyReadPipeline",
-                  "expression" : {
-                    "type" : "JavaScript",
-                    "expression" : ""
-                  },
-                  "attributes" : [ {
-                    "name" : "type",
-                    "expression" : {
-                      "type" : "JavaScript",
-                      "expression" : ""
-                    }
-                  } ]
-                }, {
-                  "name" : "writePipeline",
-                  "expression" : {
-                    "type" : "JavaScript",
-                    "expression" : ""
-                  },
-                  "attributes" : [ {
-                    "name" : "type",
-                    "expression" : {
-                      "type" : "JavaScript",
-                      "expression" : ""
-                    }
-                  } ]
-                } ]
-              } ]
-            } ]
-          }, {
-            "name" : "network",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            },
-            "attributes" : [ {
-              "name" : "groups",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "hubs",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            } ]
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "PartialImport" ]
-      }, {
-        "name" : "Filter",
-        "display" : {
-          "position" : {
-            "x" : 796,
-            "y" : -1
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".AttributeFilterConfig",
-          "filterOption" : "exclude",
-          "filterList" : [ {
-            "filterType" : "exactPathFilter",
-            "filterText" : "Site1"
-          } ],
-          "retainAsMetadata" : true,
-          "metadataKey" : "filtered"
-        },
-        "outputs" : [ "While" ]
-      }, {
-        "name" : "LevelEqualZero",
-        "display" : {
-          "position" : {
-            "x" : 2900,
-            "y" : 387
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.level <= 0)",
-            "outputs" : [ "trueWriteNamespaces" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "UpdateLevelAndFilter" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ReturnForLoops",
-        "display" : {
-          "position" : {
-            "x" : 4250,
-            "y" : 185
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "IsArray",
-        "display" : {
-          "position" : {
-            "x" : 1550,
-            "y" : 297
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(Array.isArray(event.value) === true)",
-            "outputs" : [ "IndexExists" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "IndexIsZero" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "Model",
-        "display" : {
-          "position" : {
-            "x" : 650,
-            "y" : 342
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "JSONataHelper",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "expression",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.metadata.expression;"
-            }
-          }, {
-            "name" : "data",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.metadata.filtered;"
-            }
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "JSONataHelper" ]
-      }, {
-        "name" : "EmptyNamespace",
-        "display" : {
-          "position" : {
-            "x" : 3800,
-            "y" : 342
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "Namespace_MQTT",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "id",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            }
-          }, {
-            "name" : "name",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            }
-          }, {
-            "name" : "parentNamespaceId",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            }
-          }, {
-            "name" : "reference",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            },
-            "attributes" : [ {
-              "name" : "type",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "connectionName",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "name",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "params",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "attributes" : [ {
-                "name" : "Path",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                }
-              } ]
-            } ]
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "ReturnForLoops" ]
-      }, {
-        "name" : "SetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 200,
-            "y" : 342
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "// filter\r\nlet filter = '';\r\nif (event.metadata.hasOwnProperty('filter')) \r\n{\r\n    filter = event.metadata.filter;\r\n}\r\nstage.setMetadata(\"filter\", filter);\r\n\r\n//level\r\nlet level = 0;\r\nif (event.metadata.hasOwnProperty('level')) \r\n{\r\n    level = event.metadata.level;\r\n}\r\nstage.setMetadata(\"level\", level);\r\n\r\n// expression\r\nlet expression = \"$keys(event.value.data.$)\";\r\nif (level > 0)\r\n{\r\n    expression = \"$keys(event.value.data.\" + filter + \"$)\";\r\n}\r\nstage.setMetadata(\"expression\", expression);\r\n\r\n// index\r\nlet index = 0;\r\nif (event.metadata.hasOwnProperty('index')) \r\n{\r\n    index = event.metadata.index;\r\n}\r\nstage.setMetadata(\"index\", index);\r\n\r\n// previousIndexes\r\nlet previousIndexes = [0];\r\nif (event.metadata.hasOwnProperty('previousIndexes')) \r\n{\r\n    previousIndexes = event.metadata.previousIndexes;\r\n}\r\nstage.setMetadata(\"previousIndexes\", previousIndexes);\r\n\r\n// parentNamespaceIds\r\nlet parentNamespaceIds = [''];\r\nif (event.metadata.hasOwnProperty('parentNamespaceIds')) \r\n{\r\n    parentNamespaceIds = event.metadata.parentNamespaceIds;\r\n}\r\nstage.setMetadata(\"parentNamespaceIds\", parentNamespaceIds);\r\nstage.setMetadata(\"parentNamespaceId\", parentNamespaceIds[level]);\r\n\r\n// writeNamespaces\r\nstage.setMetadata(\"writeNamespaces\", false);\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "Model" ]
-      }, {
-        "name" : "GetIndex",
-        "display" : {
-          "position" : {
-            "x" : 2450,
-            "y" : 95
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setValue(event.value[event.metadata.index]);"
-        },
-        "outputs" : [ "SetLevelFilterPreviousIndexesIds" ]
-      }, {
-        "name" : "Namespace",
-        "display" : {
-          "position" : {
-            "x" : 3800,
-            "y" : 50
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "Namespace_MQTT",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "id",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.metadata.id;"
-            }
-          }, {
-            "name" : "name",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.value;"
-            }
-          }, {
-            "name" : "parentNamespaceId",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "if (event.metadata.parentNamespaceId.length > 0)\r\n{\r\n    return event.metadata.parentNamespaceId;\r\n}"
-            }
-          }, {
-            "name" : "reference",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            },
-            "attributes" : [ {
-              "name" : "type",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "connectionName",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "name",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "params",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "attributes" : [ {
-                "name" : "Path",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : ""
-                }
-              } ]
-            } ]
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "ReturnForLoops" ]
-      }, {
-        "name" : "SetLevelFilterPreviousIndexesIds",
-        "display" : {
-          "position" : {
-            "x" : 2900,
-            "y" : 207
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "// level\r\nlet level = event.metadata.level + 1;\r\nstage.setMetadata(\"level\", level);\r\n\r\n// previousIndexes\r\nif ((event.metadata.previousIndexes.length -1) < level)\r\n{\r\n    let previousIndexes = event.metadata.previousIndexes.toSpliced(level, 0, 0)\r\n    stage.setMetadata(\"previousIndexes\", previousIndexes);\r\n}\r\nelse\r\n{\r\n    let previousIndexes = event.metadata.previousIndexes;\r\n    previousIndexes[level] = 0;\r\n    stage.setMetadata(\"previousIndexes\", previousIndexes);\r\n}\r\n\r\n// filter\r\nif (event.metadata.filter != '')\r\n{\r\n    stage.setMetadata(\"filter\", event.metadata.filter + event.value + \".\");\r\n}\r\nelse\r\n{\r\n    stage.setMetadata(\"filter\", event.value + \".\");\r\n}\r\nstage.setMetadata(\"index\", 0);\r\n\r\n// currnet id\r\nstage.setMetadata(\"id\", event.id);\r\n\r\n// parentNamespaceIds\r\nif ((event.metadata.parentNamespaceIds.length -1) < level)\r\n{\r\n    let parentNamespaceIds = event.metadata.parentNamespaceIds.toSpliced(level, 0, event.id)\r\n    stage.setMetadata(\"parentNamespaceIds\", parentNamespaceIds);\r\n}\r\nelse\r\n{\r\n    let parentNamespaceIds = event.metadata.parentNamespaceIds;\r\n    parentNamespaceIds[level] = event.id;\r\n    stage.setMetadata(\"parentNamespaceIds\", parentNamespaceIds);\r\n}\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "LevelLessThan3" ]
-      }, {
-        "name" : "IndexExists",
-        "display" : {
-          "position" : {
-            "x" : 2000,
-            "y" : 185
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.value.length >= (event.metadata.index + 1))",
-            "outputs" : [ "GetIndex" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "LevelEqualZero" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "NamespaceWithConnection",
-        "display" : {
-          "position" : {
-            "x" : 3800,
-            "y" : 185
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "Namespace_MQTT",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "id",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.metadata.id;"
-            }
-          }, {
-            "name" : "name",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.value;"
-            }
-          }, {
-            "name" : "parentNamespaceId",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "if (event.metadata.parentNamespaceId.length > 0)\r\n{\r\n    return event.metadata.parentNamespaceId;\r\n}"
-            }
-          }, {
-            "name" : "reference",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            },
-            "attributes" : [ {
-              "name" : "type",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : "return \"Input\""
-              }
-            }, {
-              "name" : "connectionName",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : "return \"MQTT_BuildNamespace\""
-              }
-            }, {
-              "name" : "name",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : "return \"FromPath\""
-              }
-            }, {
-              "name" : "params",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              },
-              "attributes" : [ {
-                "name" : "Path",
-                "expression" : {
-                  "type" : "JavaScript",
-                  "expression" : "const path = event.metadata.filter;\r\nconst result = path.slice(0, -1).replaceAll('.', '/');\r\nreturn result;"
-                }
-              } ]
-            } ]
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "ReturnForLoops" ]
-      }, {
-        "name" : "IndexIsZero",
-        "display" : {
-          "position" : {
-            "x" : 2450,
-            "y" : 410
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.index === 0)",
-            "outputs" : [ "SetLevelFilterPreviousIndexesIds" ],
-            "description" : "Zero"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "LevelEqualZero" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "LevelLessThan3",
-        "display" : {
-          "position" : {
-            "x" : 3350,
-            "y" : 207
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.level<3)",
-            "outputs" : [ "Namespace" ],
-            "description" : "LessThen3"
-          }, {
-            "expression" : "return Boolean(event.metadata.level===3)",
-            "outputs" : [ "NamespaceWithConnection" ],
-            "description" : "Equal3"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "EmptyNamespace" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "JSONataHelper",
-        "display" : {
-          "position" : {
-            "x" : 1100,
-            "y" : 342
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SubPipelineConfig",
-          "failureOutputs" : [ "UpdateLevelAndFilter" ],
-          "reference" : "{{Pipeline.JSONataHelper}}"
-        },
-        "outputs" : [ "IsArray" ]
-      }, {
-        "name" : "UpdateLevelAndFilter",
-        "display" : {
-          "position" : {
-            "x" : 3350,
-            "y" : 500
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "// update level\r\nlet level = event.metadata.level - 1;\r\nstage.setMetadata(\"level\", level);\r\n\r\n// update filter\r\nlet filterArr = event.metadata.filter.split(\".\");\r\nlet currentFilter = filterArr[level] + \".\";\r\nlet filter = event.metadata.filter.replace(currentFilter, '');\r\nstage.setMetadata(\"filter\", filter);\r\n\r\n// update previousIndexes\r\nlet previousIndexes = event.metadata.previousIndexes;\r\nlet index = previousIndexes[level] + 1;\r\nstage.setMetadata(\"index\", index);\r\npreviousIndexes[level] = index;\r\nstage.setMetadata(\"previousIndexes\", previousIndexes);\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "EmptyNamespace" ]
-      }, {
-        "name" : "trueWriteNamespaces",
-        "display" : {
-          "position" : {
-            "x" : 3350,
-            "y" : 365
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "// writeNamespaces\r\nstage.setMetadata(\"writeNamespaces\", true);\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "EmptyNamespace" ]
-      }, {
-        "name" : "JavaScript",
-        "display" : {
-          "position" : {
-            "x" : 7514,
-            "y" : -71
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setValue(event.value);"
-        },
-        "outputs" : [ ]
-      } ],
-      "trackActivity" : true,
-      "queueSize" : 10000,
-      "triggers" : [ ],
-      "errorHandler" : {
-        "type" : "default"
-      }
-    }, {
       "name" : "BuildNamespace_PIAssetMetadataSource",
       "tags" : [ "BuildNamespace" ],
       "inputStages" : [ "AssetMetadata" ],
@@ -2928,11 +1694,105 @@
         "type" : "default"
       }
     }, {
-      "name" : "JSONataHelper",
+      "name" : "BuildNamespacei3XHistoryReads",
       "tags" : [ "BuildNamespace" ],
-      "inputStages" : [ "JSONata" ],
+      "inputStages" : [ "FirstIndex" ],
       "stages" : [ {
-        "name" : "JSONata",
+        "name" : "SmartQuery",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SmartQueryConfig",
+          "query" : {
+            "from" : [ "{{event.metadata.filtered.elementId}}" ],
+            "where" : "",
+            "select" : {
+              "what" : [ "metadata" ],
+              "as" : "List",
+              "delim" : "."
+            }
+          },
+          "breakup" : false,
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "Read" ]
+      }, {
+        "name" : "HistoryReadResults",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "HistoryReadsResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.metadata.filtered.elementId.replaceAll(\"\\\"\", \"\");"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].value"
+            }
+          }, {
+            "name" : "quality",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].quality"
+            }
+          }, {
+            "name" : "timestamp",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].time"
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Read",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PointHistoricalValues",
+            "path" : "",
+            "params" : {
+              "Point" : "{{event.value[0]._metadata.PointName}}",
+              "StartTime" : "{{event.metadata.filtered.startTime}}",
+              "EndTime" : "{{event.metadata.filtered.endTime}}"
+            },
+            "connectionName" : "BuildNamespace_PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "Breakup" ]
+      }, {
+        "name" : "FirstIndex",
         "display" : {
           "position" : {
             "x" : 240,
@@ -2942,25 +1802,59 @@
         "description" : "",
         "config" : {
           "type" : ".JSONataTransformConfig",
-          "transformExpression" : "{{event.value.expression}}"
+          "transformExpression" : "event.value[0]"
         },
-        "outputs" : [ "Switch" ]
+        "outputs" : [ "HandleSpaces" ]
       }, {
-        "name" : "DataNotParsed",
+        "name" : "Return",
         "display" : {
           "position" : {
-            "x" : 1140,
-            "y" : 67
+            "x" : 3390,
+            "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".ErrorConfig",
-          "errorMessage" : "Data Not Parsed Using Expression: {{event.value.expression}}"
+          "type" : ".ReturnConfig"
         },
         "outputs" : [ ]
       }, {
-        "name" : "Switch",
+        "name" : "Breakup",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".BreakupConfig",
+          "breakupType" : "object",
+          "depth" : 1
+        },
+        "outputs" : [ "HistoryReadResults" ]
+      }, {
+        "name" : "BadKey",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "include",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "BadKey"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "filtered"
+        },
+        "outputs" : [ "SmartQuery" ]
+      }, {
+        "name" : "HandleSpaces",
         "display" : {
           "position" : {
             "x" : 690,
@@ -2969,31 +1863,10 @@
         },
         "description" : "",
         "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.value.hasOwnProperty('expression')) === false",
-            "outputs" : [ "Return" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "DataNotParsed" ],
-            "description" : "Default"
-          } ]
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "var path = event.value.elementId;\r\nevent.value.elementId = path.split('.').map(function (s) {\r\n  return /\\s/.test(s) ? '\"' + s + '\"' : s;\r\n}).join('.');\r\n\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : -67
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
+        "outputs" : [ "BadKey" ]
       } ],
       "trackActivity" : true,
       "queueSize" : 10000,
@@ -3002,7 +1875,7 @@
         "display" : {
           "position" : {
             "x" : -450,
-            "y" : 67
+            "y" : 0
           }
         },
         "description" : "",
@@ -3011,46 +1884,6 @@
           "enabled" : true,
           "parameters" : {
             "type" : "EmptyParameters"
-          }
-        }
-      }, {
-        "name" : "ApiTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : -67
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerApi",
-          "enabled" : true,
-          "parameters" : {
-            "type" : "inline",
-            "model" : {
-              "name" : "params",
-              "tags" : [ ],
-              "attributes" : [ {
-                "attributeType" : "Internal",
-                "name" : "expression",
-                "nullable" : false,
-                "required" : false,
-                "array" : false,
-                "internalType" : {
-                  "variant" : "Any"
-                }
-              }, {
-                "attributeType" : "Internal",
-                "name" : "data",
-                "nullable" : false,
-                "required" : false,
-                "array" : false,
-                "internalType" : {
-                  "variant" : "Any"
-                }
-              } ],
-              "modelVersion" : ""
-            }
           }
         }
       } ],
