@@ -34,7 +34,7 @@
       },
       "settings" : {
         "connectTimeoutSeconds" : 5,
-        "requestTimeoutMS" : 30000,
+        "requestTimeoutMS" : 90000,
         "compression" : "NONE",
         "auth" : {
           "type" : "credentials",
@@ -128,7 +128,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "WellsDowntimeDemo",
+            "defaultValue" : "",
             "internalType" : {
               "variant" : "String"
             }
@@ -247,7 +247,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "OSIDemo_Plant.Average Quality.3756ba92-45b0-5c61-0cae-a792b866d53d",
+            "defaultValue" : "",
             "internalType" : {
               "variant" : "String"
             }
@@ -296,7 +296,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "OSIDemo_Line 1.Outlet Pump.Suction Pressure.f21a7d7d-b550-5a02-01ce-e0fd3edba872",
+            "defaultValue" : "",
             "internalType" : {
               "variant" : "String"
             }
@@ -306,7 +306,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "2026-08-28T21:43:54.790Z",
+            "defaultValue" : "",
             "internalType" : {
               "variant" : "String"
             }
@@ -316,7 +316,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "2026-08-28T22:43:54.790Z",
+            "defaultValue" : "",
             "internalType" : {
               "variant" : "String"
             }
@@ -801,8 +801,8 @@
         "name" : "TestMessage",
         "display" : {
           "position" : {
-            "x" : 791,
-            "y" : 202
+            "x" : 795,
+            "y" : -67
           }
         },
         "description" : "",
@@ -816,7 +816,7 @@
         "display" : {
           "position" : {
             "x" : 795,
-            "y" : 0
+            "y" : 67
           }
         },
         "description" : "",
@@ -836,13 +836,13 @@
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
         },
-        "outputs" : [ "ForEach" ]
+        "outputs" : [ "WriteNew", "ForEach" ]
       }, {
         "name" : "PartialImport",
         "display" : {
           "position" : {
-            "x" : 6795,
-            "y" : 0
+            "x" : 7245,
+            "y" : 318
           }
         },
         "description" : "",
@@ -867,11 +867,11 @@
         "display" : {
           "position" : {
             "x" : 1245,
-            "y" : -300
+            "y" : -48
           },
           "size" : {
-            "width" : 4500,
-            "height" : 690
+            "width" : 4950,
+            "height" : 825
           },
           "metadata" : { }
         },
@@ -881,17 +881,43 @@
           "failureOutputs" : [ ],
           "loopOutputs" : [ "attrubutes" ],
           "stageTimeout" : {
-            "duration" : 30,
+            "duration" : 90,
             "units" : "Seconds"
           }
         },
         "outputs" : [ "JSONata" ]
       }, {
+        "name" : "WriteNew",
+        "display" : {
+          "position" : {
+            "x" : 3570,
+            "y" : -183
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.mqtt}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "{{event.metadata.Database}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
         "name" : "JavaScript",
         "display" : {
           "position" : {
-            "x" : 7245,
-            "y" : 0
+            "x" : 7028,
+            "y" : -51
           }
         },
         "description" : "",
@@ -899,13 +925,13 @@
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "stage.setValue(event.value);"
         },
-        "outputs" : [ ]
+        "outputs" : [ "WriteNew" ]
       }, {
         "name" : "JSONata",
         "display" : {
           "position" : {
-            "x" : 5895,
-            "y" : 0
+            "x" : 6345,
+            "y" : 318
           }
         },
         "description" : "",
@@ -925,15 +951,15 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "TestMessage", "AssetMetadata" ]
       }, {
         "name" : "Project",
         "display" : {
           "position" : {
-            "x" : 6345,
-            "y" : 0
+            "x" : 6795,
+            "y" : 318
           }
         },
         "description" : "",
@@ -1239,7 +1265,7 @@
         "name" : "WhileAttributes",
         "display" : {
           "position" : {
-            "x" : 1500,
+            "x" : 1950,
             "y" : 150
           },
           "size" : {
@@ -1256,10 +1282,10 @@
           "failureOutputs" : [ ],
           "loopOutputs" : [ "AttributeForIndex" ],
           "stageTimeout" : {
-            "duration" : 30,
+            "duration" : 90,
             "units" : "Seconds"
           },
-          "expression" : "return loop.runCount < event.metadata.filtered.attributes.length;",
+          "expression" : "return loop.runCount <= event.metadata.filtered.attributes.length;",
           "loopValue" : "ACCUMULATED"
         },
         "outputs" : [ "Combined" ]
@@ -1267,8 +1293,8 @@
         "name" : "ReturnForEach",
         "display" : {
           "position" : {
-            "x" : 4050,
-            "y" : 300
+            "x" : 4500,
+            "y" : 442
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1280,11 +1306,53 @@
         },
         "outputs" : [ ]
       }, {
+        "name" : "AttLenGT0",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 442
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.filtered.attributes.length > 0)",
+            "outputs" : [ "WhileAttributes" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "EmptyArray" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "EmptyArray",
+        "display" : {
+          "position" : {
+            "x" : 2775,
+            "y" : 585
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setValue([]);"
+        },
+        "outputs" : [ "Combined" ]
+      }, {
         "name" : "attrubutes",
         "display" : {
           "position" : {
             "x" : 150,
-            "y" : 300
+            "y" : 442
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1307,7 +1375,7 @@
         "display" : {
           "position" : {
             "x" : 1050,
-            "y" : 300
+            "y" : 442
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1324,13 +1392,13 @@
           "retainAsMetadata" : true,
           "metadataKey" : "namespace"
         },
-        "outputs" : [ "WhileAttributes" ]
+        "outputs" : [ "AttLenGT0" ]
       }, {
         "name" : "NamespaceWithConnection_1",
         "display" : {
           "position" : {
             "x" : 600,
-            "y" : 300
+            "y" : 442
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1457,8 +1525,8 @@
         "name" : "Combined",
         "display" : {
           "position" : {
-            "x" : 3600,
-            "y" : 300
+            "x" : 4050,
+            "y" : 442
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1500,7 +1568,7 @@
         "description" : "",
         "config" : {
           "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.metadata.filtered.attributes[{{event.metadata.loopIndex}}]"
+          "transformExpression" : "event.metadata.filtered.attributes[{{event.metadata.loopIndex}} - 1]"
         },
         "outputs" : [ "HasPoint" ]
       }, {
