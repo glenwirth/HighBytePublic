@@ -890,8 +890,8 @@
         "name" : "WriteNew",
         "display" : {
           "position" : {
-            "x" : 3570,
-            "y" : -183
+            "x" : 3435,
+            "y" : -565
           }
         },
         "description" : "",
@@ -925,7 +925,7 @@
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "stage.setValue(event.value);"
         },
-        "outputs" : [ "WriteNew" ]
+        "outputs" : [ ]
       }, {
         "name" : "JSONata",
         "display" : {
@@ -1260,7 +1260,7 @@
           } ],
           "expandArray" : false
         },
-        "outputs" : [ "PartialImport" ]
+        "outputs" : [ "WriteNew", "PartialImport" ]
       }, {
         "name" : "WhileAttributes",
         "display" : {
@@ -1426,7 +1426,7 @@
             "name" : "name",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return event.value._name;"
+              "expression" : "return event.value._name.replaceAll('|', ' ').replaceAll(\".\", \" \").replaceAll(\"(\", \" \").replaceAll(\"/\", \" \").replaceAll(\")\", \" \").replaceAll(\"/\", \" \").replaceAll(\"%\", \"\").trimStart().trimEnd();"
             }
           }, {
             "name" : "parentNamespaceId",
@@ -1558,7 +1558,7 @@
         "name" : "AttributeForIndex",
         "display" : {
           "position" : {
-            "x" : 150,
+            "x" : 146,
             "y" : 150
           },
           "metadata" : {
@@ -1575,7 +1575,7 @@
         "name" : "NamespaceWithConnection_1_1",
         "display" : {
           "position" : {
-            "x" : 1050,
+            "x" : 1046,
             "y" : 150
           },
           "metadata" : {
@@ -1604,7 +1604,7 @@
             "name" : "name",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return event.value.name;"
+              "expression" : "return event.value.name.replaceAll('|', ' ').replaceAll(\".\", \" \").replaceAll(\"(\", \" \").replaceAll(\"/\", \" \").replaceAll(\")\", \" \").replaceAll(\"%\", \"\").trimStart().trimEnd();"
             }
           }, {
             "name" : "parentNamespaceId",
