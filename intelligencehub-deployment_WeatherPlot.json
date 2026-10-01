@@ -2,9 +2,9 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "development.build",
-    "build" : "Not Set",
-    "stage" : "Dev"
+    "version" : "4.5.2",
+    "build" : "2026.9.22.1",
+    "stage" : "Release"
   },
   "project" : {
     "version" : 15,
@@ -1550,20 +1550,6 @@
       }
     }, {
       "type" : "local",
-      "id" : "542da204-d6de-4a76-859b-3af8887645da",
-      "name" : "Current",
-      "parentNamespaceId" : "3326c0bd-ee54-4638-9d60-01a32c37c986",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Current_Instance",
-        "path" : "",
-        "params" : {
-          "Location" : "MtWashington"
-        }
-      }
-    }, {
-      "type" : "local",
       "id" : "bd8b3cdd-023f-4939-aa78-e31f52af10e5",
       "name" : "Current",
       "parentNamespaceId" : "6ec3b689-ee5c-41e9-bf19-d91490ecbee4",
@@ -1636,10 +1622,7 @@
       "parentNamespaceId" : "282b5110-29fe-4cce-9f86-0f1c48d4ecff",
       "metadata" : [ ],
       "reference" : {
-        "type" : "Instance",
-        "name" : "Forecast_Instance",
-        "path" : "",
-        "params" : { }
+        "type" : "Empty"
       }
     }, {
       "type" : "local",
