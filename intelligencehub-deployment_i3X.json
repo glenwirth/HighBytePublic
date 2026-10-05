@@ -64,74 +64,14 @@
         "inputType" : "CurrentValue",
         "elementSource" : {
           "type" : "ObjectType",
-          "elementId" : "Site1.AMRs.AMR1",
           "cacheInterval" : {
             "duration" : 1,
             "units" : "Hours"
           },
-          "elementIds" : [ ],
           "objectTypeId" : "type:Locations"
         },
-        "includeMetadata" : true,
-        "maxDepth" : 1
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "SensorData",
-      "connection" : "i3X",
-      "type" : "i3x",
-      "qualifier" : {
-        "inputType" : "CurrentValue",
-        "elementSource" : {
-          "type" : "ObjectType",
-          "elementId" : "Site1.AMRs.AMR1",
-          "cacheInterval" : {
-            "duration" : 1,
-            "units" : "Hours"
-          },
-          "elementIds" : [ ],
-          "objectTypeId" : "type:SensorData"
-        },
-        "includeMetadata" : true,
-        "maxDepth" : 1
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "Test_Instance",
-      "connection" : "i3X",
-      "type" : "i3x",
-      "qualifier" : {
-        "inputType" : "CurrentValue",
-        "elementSource" : {
-          "type" : "Object",
-          "elementId" : "HighByte.Instance.Test_Instance",
-          "cacheInterval" : {
-            "duration" : 1,
-            "units" : "Hours"
-          },
-          "elementIds" : [ ],
-          "objectTypeId" : "type:SensorData"
-        },
-        "includeMetadata" : true,
-        "maxDepth" : 1
+        "maxDepth" : 1,
+        "includeMetadata" : true
       },
       "cacheLifetime" : {
         "enabled" : false
@@ -398,6 +338,52 @@
           "parameters" : {
             "type" : "EmptyParameters"
           }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "i3XLocationEvents",
+      "tags" : [ "i3X" ],
+      "inputStages" : [ "ShowResults" ],
+      "stages" : [ {
+        "name" : "ShowResults",
+        "display" : {
+          "position" : {
+            "x" : 227,
+            "y" : 3
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setValue(event.value);"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "EventTrigger",
+        "display" : {
+          "position" : {
+            "x" : -425,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerEvent",
+          "enabled" : true,
+          "reference" : {
+            "type" : "Input",
+            "name" : "Locations",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "i3X"
+          },
+          "outputMode" : "ALL"
         }
       } ],
       "errorHandler" : {
