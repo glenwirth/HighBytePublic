@@ -2,9 +2,9 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "development.build",
-    "build" : "Not Set",
-    "stage" : "Dev"
+    "version" : "4.5.2",
+    "build" : "2026.9.22.1",
+    "stage" : "Release"
   },
   "project" : {
     "version" : 15,
@@ -37,49 +37,6 @@
           "type" : "default"
         },
         "database" : ":memory:"
-      }
-    }, {
-      "name" : "ProductionLine_OPC_UA",
-      "uri" : "opc.tcp://52.10.6.4:49320",
-      "tags" : [ "i3XLocationTracker" ],
-      "writes" : {
-        "flattenModeledValues" : false
-      },
-      "writeThrottle" : {
-        "enabled" : false,
-        "maxBatchSizePerTarget" : 1000,
-        "batchDelay" : {
-          "duration" : 20,
-          "units" : "Milliseconds"
-        }
-      },
-      "subscriptions" : {
-        "subscriptionRate" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "storeForward" : {
-        "enabled" : false,
-        "maxEntries" : 100,
-        "waitOnFailureInterval" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "settings" : {
-        "security" : "None",
-        "authentication" : {
-          "type" : "Anonymous"
-        },
-        "connectTimeoutSeconds" : 5,
-        "requestTimeoutMS" : 5000,
-        "maxItemsPerRead" : 512,
-        "maxItemsPerWrite" : 256,
-        "certificateKeyPair" : "app-certificate-private-key",
-        "sessionName" : "",
-        "identifierMode" : "NodeId",
-        "mcpEnabled" : "enabled"
       }
     }, {
       "name" : "i3XLocationTracker_MQTT",
@@ -197,89 +154,6 @@
         "type" : "EmptyParameters"
       }
     }, {
-      "name" : "ProductionLine",
-      "connection" : "ProductionLine_OPC_UA",
-      "type" : "opc.tcp",
-      "qualifier" : {
-        "dataType" : "Auto",
-        "type" : "Branch",
-        "identifier" : {
-          "type" : "NodeId",
-          "namespaceIndex" : "2",
-          "identifierType" : "String",
-          "value" : "ProductionLine"
-        }
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "ProductionLine_PLC_1",
-      "connection" : "ProductionLine_OPC_UA",
-      "type" : "opc.tcp",
-      "qualifier" : {
-        "type" : "Branch",
-        "identifier" : {
-          "type" : "NodeId",
-          "namespaceIndex" : "2",
-          "identifierType" : "String",
-          "value" : "ProductionLine.PLC_1"
-        },
-        "cacheInterval" : {
-          "duration" : 1,
-          "units" : "Hours"
-        },
-        "maxDepth" : 1,
-        "browseVariableNodes" : false,
-        "ignoreBadQuality" : false,
-        "isComplex" : true
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "ProductionLine_PLC_1_Humidity",
-      "connection" : "ProductionLine_OPC_UA",
-      "type" : "opc.tcp",
-      "qualifier" : {
-        "type" : "Tag",
-        "identifier" : {
-          "type" : "NodeId",
-          "namespaceIndex" : "2",
-          "identifierType" : "String",
-          "value" : "ProductionLine.PLC_1.Humidity"
-        },
-        "samplingInterval" : {
-          "duration" : 0,
-          "units" : "Seconds"
-        },
-        "isComplex" : true
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
       "name" : "Topic",
       "connection" : "i3XLocationTracker_MQTT",
       "type" : "mqtt",
@@ -324,7 +198,7 @@
         "tags" : [ "i3XLocationTracker" ],
         "attributes" : [ {
           "attributeType" : "Internal",
-          "name" : "Login",
+          "name" : "Object",
           "nullable" : false,
           "required" : false,
           "array" : false,
@@ -418,87 +292,6 @@
           }
         } ],
         "modelVersion" : ""
-      }, {
-        "name" : "SensorData",
-        "tags" : [ "i3XLocationTracker" ],
-        "attributes" : [ {
-          "attributeType" : "Internal",
-          "name" : "Login",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        }, {
-          "attributeType" : "Modeled",
-          "name" : "SensorData",
-          "nullable" : false,
-          "required" : false,
-          "array" : true,
-          "model" : "SensorDataDetail"
-        } ],
-        "modelVersion" : ""
-      }, {
-        "name" : "SensorDataDetail",
-        "tags" : [ "i3XLocationTracker" ],
-        "attributes" : [ {
-          "attributeType" : "Internal",
-          "name" : "Timestamp",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "Quantity",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "String"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "Value",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "String"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "Unit",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "String"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "DataType",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "String"
-          }
-        }, {
-          "attributeType" : "Internal",
-          "name" : "ValueOK",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "defaultValue" : true,
-          "internalType" : {
-            "variant" : "Boolean"
-          }
-        } ],
-        "modelVersion" : ""
       } ],
       "instances" : [ {
         "name" : "Locations_Instance",
@@ -511,7 +304,7 @@
         "executeMode" : "V4",
         "initExpression" : "",
         "attributes" : [ {
-          "name" : "Login",
+          "name" : "Object",
           "expression" : {
             "type" : "Reference",
             "reference" : {
@@ -610,107 +403,6 @@
               "required" : false,
               "array" : false,
               "defaultValue" : "Site1/AMRs/AMR1",
-              "internalType" : {
-                "variant" : "String"
-              }
-            } ],
-            "modelVersion" : ""
-          }
-        }
-      }, {
-        "name" : "SensorData_Instance",
-        "tags" : [ "i3XLocationTracker" ],
-        "model" : "SensorData",
-        "rootValueAs" : "Object",
-        "template" : {
-          "type" : "Off"
-        },
-        "executeMode" : "V4",
-        "initExpression" : "",
-        "attributes" : [ {
-          "name" : "Login",
-          "expression" : {
-            "type" : "Reference",
-            "reference" : {
-              "type" : "Empty"
-            }
-          }
-        }, {
-          "name" : "SensorData",
-          "expression" : {
-            "type" : "Reference",
-            "reference" : {
-              "type" : "Input",
-              "name" : "Topic",
-              "path" : ".SensorData",
-              "params" : {
-                "Topic" : "{{this.Topic}}"
-              },
-              "connectionName" : "i3XLocationTracker_MQTT"
-            }
-          },
-          "attributes" : [ {
-            "name" : "Timestamp",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Quantity",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Value",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Unit",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "DataType",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "ValueOK",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          } ]
-        } ],
-        "parameters" : {
-          "type" : "inline",
-          "model" : {
-            "name" : "params",
-            "tags" : [ ],
-            "attributes" : [ {
-              "attributeType" : "Internal",
-              "name" : "Topic",
-              "nullable" : false,
-              "required" : false,
-              "array" : false,
-              "defaultValue" : "Site1/ProductionLine/PLC_1",
               "internalType" : {
                 "variant" : "String"
               }
@@ -960,7 +652,7 @@
           "eventPath" : "",
           "connectionType" : "mqtt",
           "qualifier" : {
-            "topic" : "Site1/AMRs/{{event.metadata.login}}",
+            "topic" : "Site1/AMRs/{{event.metadata.object}}",
             "qos" : 0,
             "namedRoot" : false,
             "retained" : true,
@@ -982,7 +674,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// login\r\nstage.setMetadata(\"login\", \"AMR1\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// object\r\nstage.setMetadata(\"object\", \"AMR1\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "GetLocations" ]
       }, {
@@ -1000,10 +692,10 @@
           "objectName" : "",
           "initExpression" : "",
           "attributes" : [ {
-            "name" : "Login",
+            "name" : "Object",
             "expression" : {
               "type" : "PipelineStageReference",
-              "stageReference" : ""
+              "stageReference" : "event.metadata.object"
             }
           }, {
             "name" : "Locations",
@@ -1267,10 +959,10 @@
           "objectName" : "",
           "initExpression" : "",
           "attributes" : [ {
-            "name" : "Login",
+            "name" : "Object",
             "expression" : {
               "type" : "PipelineStageReference",
-              "stageReference" : ""
+              "stageReference" : "event.metadata.object"
             }
           }, {
             "name" : "Locations",
@@ -1347,7 +1039,7 @@
           "eventPath" : "",
           "connectionType" : "mqtt",
           "qualifier" : {
-            "topic" : "Site1/AMRs/{{event.metadata.login}}",
+            "topic" : "Site1/AMRs/{{event.metadata.object}}",
             "qos" : 0,
             "namedRoot" : false,
             "retained" : true,
@@ -1395,7 +1087,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// login\r\nstage.setMetadata(\"login\", \"AMR2\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// object\r\nstage.setMetadata(\"object\", \"AMR2\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "GetLocations" ]
       }, {
@@ -1559,325 +1251,6 @@
         "type" : "default"
       }
     }, {
-      "name" : "Site1ProductionLine",
-      "tags" : [ "i3XLocationTracker" ],
-      "inputStages" : [ "PLCsObjToArray" ],
-      "stages" : [ {
-        "name" : "PLCsObjToArray",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "$spread(event.value)"
-        },
-        "outputs" : [ "ForEachPLC" ]
-      }, {
-        "name" : "ForEachPLC",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : -300
-          },
-          "size" : {
-            "width" : 3600,
-            "height" : 690
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SetPLC" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "SensorDatasObjToArray",
-        "display" : {
-          "position" : {
-            "x" : 600,
-            "y" : 300
-          },
-          "metadata" : {
-            "parent" : "ForEachPLC"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "$spread(event.value)"
-        },
-        "outputs" : [ "ForEachSensor" ]
-      }, {
-        "name" : "ForEachSensor",
-        "display" : {
-          "position" : {
-            "x" : 1050,
-            "y" : 150
-          },
-          "size" : {
-            "width" : 1050,
-            "height" : 390
-          },
-          "metadata" : {
-            "parent" : "ForEachPLC"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SensorDataDetail" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "SensorData" ]
-      }, {
-        "name" : "MQTT",
-        "display" : {
-          "position" : {
-            "x" : 2700,
-            "y" : 300
-          },
-          "metadata" : {
-            "parent" : "ForEachPLC"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.i3XLocationTracker_MQTT}}",
-          "eventPath" : "",
-          "connectionType" : "mqtt",
-          "qualifier" : {
-            "topic" : "Site1/ProductionLine/{{event.metadata.PLC}}",
-            "qos" : 0,
-            "namedRoot" : false,
-            "retained" : true,
-            "breakupArrays" : false,
-            "type" : "Tag"
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "ReturnPLC" ]
-      }, {
-        "name" : "SensorData",
-        "display" : {
-          "position" : {
-            "x" : 2250,
-            "y" : 300
-          },
-          "metadata" : {
-            "parent" : "ForEachPLC"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "SensorData",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "Login",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : ""
-            }
-          }, {
-            "name" : "SensorData",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.value"
-            },
-            "attributes" : [ {
-              "name" : "Timestamp",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Quantity",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Value",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Unit",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "DataType",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "ValueOK",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            } ]
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "MQTT" ]
-      }, {
-        "name" : "SetPLC",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 300
-          },
-          "metadata" : {
-            "parent" : "ForEachPLC"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const plc = Object.keys(event.value)[0];\r\nstage.setMetadata(\"PLC\", plc);\r\nstage.setValue(event.value[plc]);"
-        },
-        "outputs" : [ "SensorDatasObjToArray" ]
-      }, {
-        "name" : "ReturnPLC",
-        "display" : {
-          "position" : {
-            "x" : 3150,
-            "y" : 300
-          },
-          "metadata" : {
-            "parent" : "ForEachPLC"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ReturnSensorData",
-        "display" : {
-          "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEachSensor"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "SensorDataDetail",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEachSensor"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "SensorDataDetail",
-          "objectName" : "",
-          "initExpression" : "variables.KeyName = Object.keys(event.value)[0];",
-          "attributes" : [ {
-            "name" : "Timestamp",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return Date.now()"
-            }
-          }, {
-            "name" : "Quantity",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return variables.KeyName;"
-            }
-          }, {
-            "name" : "Value",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "if (variables.KeyName == \"Temperature\")\r\n{\r\n    return Math.floor(event.value[variables.KeyName]);\r\n}\r\nelse\r\n{\r\n    return event.value[variables.KeyName];\r\n}\r\n"
-            }
-          }, {
-            "name" : "Unit",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "if (variables.KeyName == \"Pressure\")\r\n{\r\n    return \"Pa\";\r\n}\r\nelse if (variables.KeyName == \"Temperature\")\r\n{\r\n    return \"°C\";\r\n}\r\nelse \r\n{\r\n    return \"Ea\";\r\n}\r\n"
-            }
-          }, {
-            "name" : "DataType",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "if (variables.KeyName == \"Pressure\")\r\n{\r\n    return \"Double\";\r\n}\r\nelse if (variables.KeyName == \"Temperature\")\r\n{\r\n    return \"Int32\";\r\n}\r\nelse\r\n{\r\n    return \"String\";\r\n}\r\n\r\n"
-            }
-          }, {
-            "name" : "ValueOK",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return true"
-            }
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "ReturnSensorData" ]
-      } ],
-      "trackActivity" : false,
-      "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "EventTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerEvent",
-          "enabled" : true,
-          "reference" : {
-            "type" : "Input",
-            "name" : "ProductionLine",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "ProductionLine_OPC_UA"
-          },
-          "outputMode" : "COMPRESSED"
-        }
-      } ],
-      "errorHandler" : {
-        "type" : "default"
-      }
-    }, {
       "name" : "i3XLocationsStream",
       "tags" : [ "i3XLocationTracker" ],
       "inputStages" : [ "Results" ],
@@ -1923,52 +1296,6 @@
       "errorHandler" : {
         "type" : "default"
       }
-    }, {
-      "name" : "i3XSensorDataStream",
-      "tags" : [ "i3XLocationTracker" ],
-      "inputStages" : [ "Results" ],
-      "stages" : [ {
-        "name" : "Results",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setValue(event.value);"
-        },
-        "outputs" : [ ]
-      } ],
-      "trackActivity" : false,
-      "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "SensorDataEventTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerEvent",
-          "enabled" : true,
-          "reference" : {
-            "type" : "Input",
-            "name" : "SensorData",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "i3X"
-          },
-          "outputMode" : "ALL"
-        }
-      } ],
-      "errorHandler" : {
-        "type" : "default"
-      }
     } ],
     "tags" : [ {
       "name" : "i3XLocationTracker"
@@ -1976,7 +1303,7 @@
     "functions" : [ ],
     "namespace" : [ {
       "type" : "local",
-      "id" : "f0132270-1227-4f4e-9e61-c7a0fc07d35d",
+      "id" : "21d2c495-9bbe-4cab-b59e-e35e1acef7ba",
       "name" : "Site1",
       "metadata" : [ ],
       "reference" : {
@@ -1984,18 +1311,18 @@
       }
     }, {
       "type" : "local",
-      "id" : "cdefd10c-a5fc-4280-9229-3a512361d45f",
+      "id" : "0c25a6ed-cc53-467c-8b1e-77db4fa62566",
       "name" : "AMRs",
-      "parentNamespaceId" : "f0132270-1227-4f4e-9e61-c7a0fc07d35d",
+      "parentNamespaceId" : "21d2c495-9bbe-4cab-b59e-e35e1acef7ba",
       "metadata" : [ ],
       "reference" : {
         "type" : "Empty"
       }
     }, {
       "type" : "local",
-      "id" : "f3773f6e-c64e-4d87-9abf-dccd4e630829",
+      "id" : "70dcf7b0-3c18-4cab-b9fd-7ad74e5188ab",
       "name" : "AMR1",
-      "parentNamespaceId" : "cdefd10c-a5fc-4280-9229-3a512361d45f",
+      "parentNamespaceId" : "0c25a6ed-cc53-467c-8b1e-77db4fa62566",
       "metadata" : [ ],
       "reference" : {
         "type" : "Instance",
@@ -2007,9 +1334,9 @@
       }
     }, {
       "type" : "local",
-      "id" : "635c5a08-6832-4934-8a76-d236dceeb6c1",
+      "id" : "61ac7e9d-19e7-4d52-9e55-c687495ef519",
       "name" : "AMR2",
-      "parentNamespaceId" : "cdefd10c-a5fc-4280-9229-3a512361d45f",
+      "parentNamespaceId" : "0c25a6ed-cc53-467c-8b1e-77db4fa62566",
       "metadata" : [ ],
       "reference" : {
         "type" : "Instance",
@@ -2017,84 +1344,6 @@
         "path" : "",
         "params" : {
           "Topic" : "Site1/AMRs/AMR2"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "20b0482f-4ff3-4767-b40e-9fb8033acf83",
-      "name" : "ProductionLine",
-      "parentNamespaceId" : "f0132270-1227-4f4e-9e61-c7a0fc07d35d",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "cfccbee1-22d4-4799-9791-2c1703975273",
-      "name" : "PLC_1",
-      "parentNamespaceId" : "20b0482f-4ff3-4767-b40e-9fb8033acf83",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "SensorData_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/ProductionLine/PLC_1"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "594f2603-2985-4631-8238-89c863583f11",
-      "name" : "ProductionLine_PLC_1_Humidity",
-      "parentNamespaceId" : "cfccbee1-22d4-4799-9791-2c1703975273",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Input",
-        "name" : "ProductionLine_PLC_1_Humidity",
-        "path" : "",
-        "params" : { },
-        "connectionName" : "ProductionLine_OPC_UA"
-      }
-    }, {
-      "type" : "local",
-      "id" : "11327028-12a1-4f20-9969-532ba5ba9a73",
-      "name" : "PLC_2",
-      "parentNamespaceId" : "20b0482f-4ff3-4767-b40e-9fb8033acf83",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "SensorData_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/ProductionLine/PLC_2"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "a428fcdd-b0d6-4d1f-b99f-3d32c7915a6a",
-      "name" : "PLC_3",
-      "parentNamespaceId" : "20b0482f-4ff3-4767-b40e-9fb8033acf83",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "SensorData_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/ProductionLine/PLC_3"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "231533af-f65f-440b-8c18-f829cabdb82a",
-      "name" : "PLC_4",
-      "parentNamespaceId" : "20b0482f-4ff3-4767-b40e-9fb8033acf83",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "SensorData_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/ProductionLine/PLC_4"
         }
       }
     } ],
