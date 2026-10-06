@@ -166,6 +166,52 @@
       "instances" : [ ]
     },
     "pipelines" : [ {
+      "name" : "i3XDateTimeEvents",
+      "tags" : [ "i3X" ],
+      "inputStages" : [ "ShowResults" ],
+      "stages" : [ {
+        "name" : "ShowResults",
+        "display" : {
+          "position" : {
+            "x" : 227,
+            "y" : 3
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setValue(event.value);"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "EventTrigger",
+        "display" : {
+          "position" : {
+            "x" : -425,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerEvent",
+          "enabled" : true,
+          "reference" : {
+            "type" : "Input",
+            "name" : "DateTime",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "i3X"
+          },
+          "outputMode" : "ALL"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
       "name" : "i3XHistoryReads",
       "tags" : [ "i3X" ],
       "inputStages" : [ "ForEach" ],
@@ -345,52 +391,6 @@
           "parameters" : {
             "type" : "EmptyParameters"
           }
-        }
-      } ],
-      "errorHandler" : {
-        "type" : "default"
-      }
-    }, {
-      "name" : "i3XLocationEvents",
-      "tags" : [ "i3X" ],
-      "inputStages" : [ "ShowResults" ],
-      "stages" : [ {
-        "name" : "ShowResults",
-        "display" : {
-          "position" : {
-            "x" : 227,
-            "y" : 3
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setValue(event.value);"
-        },
-        "outputs" : [ ]
-      } ],
-      "trackActivity" : true,
-      "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "EventTrigger",
-        "display" : {
-          "position" : {
-            "x" : -425,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerEvent",
-          "enabled" : true,
-          "reference" : {
-            "type" : "Input",
-            "name" : "DateTime",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "i3X"
-          },
-          "outputMode" : "ALL"
         }
       } ],
       "errorHandler" : {
