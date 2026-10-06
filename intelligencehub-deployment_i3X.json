@@ -57,18 +57,19 @@
     } ],
     "conditions" : [ ],
     "inputs" : [ {
-      "name" : "Locations",
+      "name" : "DateTime",
       "connection" : "i3X",
       "type" : "i3x",
       "qualifier" : {
         "inputType" : "CurrentValue",
         "elementSource" : {
-          "type" : "ObjectType",
+          "type" : "Object",
           "cacheInterval" : {
             "duration" : 1,
             "units" : "Hours"
           },
-          "objectTypeId" : "type:Locations"
+          "objectTypeId" : "type:Locations",
+          "elementId" : "HighByte.System.Internal.DateTime"
         },
         "maxDepth" : 1,
         "includeMetadata" : true
@@ -124,7 +125,7 @@
           "required" : false,
           "array" : false,
           "internalType" : {
-            "variant" : "String"
+            "variant" : "DateTime"
           }
         } ],
         "modelVersion" : ""
@@ -169,6 +170,30 @@
       "tags" : [ "i3X" ],
       "inputStages" : [ "ForEach" ],
       "stages" : [ {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1950,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "Filter" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "CombineAllArrays" ]
+      }, {
         "name" : "Return",
         "display" : {
           "position" : {
@@ -196,29 +221,50 @@
         },
         "outputs" : [ "Return" ]
       }, {
-        "name" : "ForEach",
+        "name" : "Filter",
         "display" : {
           "position" : {
-            "x" : 240,
-            "y" : -150
+            "x" : 150,
+            "y" : 150
           },
-          "size" : {
-            "width" : 1950,
-            "height" : 390
-          },
-          "metadata" : { }
+          "metadata" : {
+            "parent" : "ForEach"
+          }
         },
         "description" : "",
         "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "Filter" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "elementId"
+          }, {
+            "filterType" : "exactPathFilter",
+            "filterText" : "startTime"
+          }, {
+            "filterType" : "exactPathFilter",
+            "filterText" : "endTime"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "filtered"
+        },
+        "outputs" : [ "TestMessage" ]
+      }, {
+        "name" : "ReturnForEach",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
           }
         },
-        "outputs" : [ "CombineAllArrays" ]
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
       }, {
         "name" : "TestMessage",
         "display" : {
@@ -274,52 +320,13 @@
           }, {
             "name" : "timestamp",
             "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value[0].time"
+              "type" : "JavaScript",
+              "expression" : "// max time in array\r\nconst endTime = new Date('2026-08-28T22:43:50.0000000Z');\r\nconst time = new Date(event.value[0].time);\r\nconst diff = endTime - time;\r\nconst startTime = new Date(event.metadata.filtered.startTime);\r\nreturn new Date(startTime.getTime() + diff);"
             }
           } ],
           "expandArray" : true
         },
         "outputs" : [ "ReturnForEach" ]
-      }, {
-        "name" : "ReturnForEach",
-        "display" : {
-          "position" : {
-            "x" : 1500,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "Filter",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".AttributeFilterConfig",
-          "filterOption" : "exclude",
-          "filterList" : [ {
-            "filterType" : "exactPathFilter",
-            "filterText" : "elementId"
-          } ],
-          "retainAsMetadata" : true,
-          "metadataKey" : "filtered"
-        },
-        "outputs" : [ "TestMessage" ]
       } ],
       "trackActivity" : true,
       "queueSize" : 10000,
@@ -378,7 +385,7 @@
           "enabled" : true,
           "reference" : {
             "type" : "Input",
-            "name" : "Locations",
+            "name" : "DateTime",
             "path" : "",
             "params" : { },
             "connectionName" : "i3X"
