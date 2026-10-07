@@ -36,7 +36,7 @@
         "strategy" : {
           "type" : "default"
         },
-        "connectString" : "jdbc:duckdb:../appData/plant_data.duckdb;memory_limit=4GB",
+        "connectString" : "jdbc:duckdb:../shared/plant_data.duckdb;memory_limit=4GB",
         "classPath" : "org.duckdb.DuckDBDriver",
         "sqlSyntax" : "postgresql",
         "database" : ""
