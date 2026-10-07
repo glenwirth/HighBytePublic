@@ -721,7 +721,7 @@
               "AltPathNumber" : "{{event.metadata.altPathNumber}}",
               "Id" : "{{event.metadata.id}}"
             },
-            "connectionName" : "Locations_DuckDB"
+            "connectionName" : "Locations_SQLite"
           },
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
@@ -1370,7 +1370,52 @@
       "name" : "i3XLocationTracker"
     } ],
     "functions" : [ ],
-    "namespace" : [ ],
+    "namespace" : [ {
+      "type" : "local",
+      "id" : "375f1925-0732-472a-b721-c269f85de04b",
+      "name" : "Site1",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Empty"
+      }
+    }, {
+      "type" : "local",
+      "id" : "532a3ec2-13d7-457e-8879-0a71d16dac0d",
+      "name" : "AMRs",
+      "parentNamespaceId" : "375f1925-0732-472a-b721-c269f85de04b",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Empty"
+      }
+    }, {
+      "type" : "local",
+      "id" : "7a4001ba-3524-407a-95b8-1f2143143093",
+      "name" : "AMR1",
+      "parentNamespaceId" : "532a3ec2-13d7-457e-8879-0a71d16dac0d",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Locations_Instance",
+        "path" : "",
+        "params" : {
+          "Topic" : "Site1/AMRs/AMR1"
+        }
+      }
+    }, {
+      "type" : "local",
+      "id" : "eea597e3-4932-42f5-bcf9-e3ad3514c7d4",
+      "name" : "AMR2",
+      "parentNamespaceId" : "532a3ec2-13d7-457e-8879-0a71d16dac0d",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Locations_Instance",
+        "path" : "",
+        "params" : {
+          "Topic" : "Site1/AMRs/AMR2"
+        }
+      }
+    } ],
     "lookupMap" : [ {
       "name" : "Locations",
       "tags" : [ "i3XLocationTracker" ],
