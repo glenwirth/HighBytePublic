@@ -9,6 +9,39 @@
   "project" : {
     "version" : 15,
     "connections" : [ {
+      "name" : "Locations_DuckDB",
+      "uri" : "jdbc://localhost:443",
+      "tags" : [ "i3XLocationTracker" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "strategy" : {
+          "type" : "default"
+        },
+        "connectString" : "jdbc:duckdb:../appData/plant_data.duckdb;memory_limit=4GB",
+        "classPath" : "org.duckdb.DuckDBDriver",
+        "sqlSyntax" : "postgresql",
+        "database" : ""
+      }
+    }, {
       "name" : "Locations_SQLite",
       "uri" : "jdbc.sqlite://Locations_SQLite",
       "tags" : [ "i3XLocationTracker" ],
@@ -77,6 +110,88 @@
     } ],
     "conditions" : [ ],
     "inputs" : [ {
+      "name" : "DeleteFromLocations",
+      "connection" : "Locations_DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "delete from Locations"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "Locations",
+      "connection" : "Locations_DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "select * from Locations where Id > {{this.Id}} and (AltPathNumber = {{this.AltPathNumber}} or AltPathNumber = 0) order by Id Limit 1",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Id",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : 1,
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "AltPathNumber",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : 0,
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "LocationsTableExists",
+      "connection" : "Locations_DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'Locations';"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
       "name" : "DeleteFromLocations",
       "connection" : "Locations_SQLite",
       "type" : "jdbc.sqlite",
@@ -606,7 +721,7 @@
               "AltPathNumber" : "{{event.metadata.altPathNumber}}",
               "Id" : "{{event.metadata.id}}"
             },
-            "connectionName" : "Locations_SQLite"
+            "connectionName" : "Locations_DuckDB"
           },
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
@@ -1250,103 +1365,12 @@
       "errorHandler" : {
         "type" : "default"
       }
-    }, {
-      "name" : "i3XLocationsStream",
-      "tags" : [ "i3XLocationTracker" ],
-      "inputStages" : [ "Results" ],
-      "stages" : [ {
-        "name" : "Results",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setValue(event.value);"
-        },
-        "outputs" : [ ]
-      } ],
-      "trackActivity" : false,
-      "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "LocationsEventTrigger",
-        "display" : {
-          "position" : {
-            "x" : -440,
-            "y" : -41
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerEvent",
-          "enabled" : true,
-          "reference" : {
-            "type" : "Input",
-            "name" : "Locations",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "i3X"
-          },
-          "outputMode" : "ALL"
-        }
-      } ],
-      "errorHandler" : {
-        "type" : "default"
-      }
     } ],
     "tags" : [ {
       "name" : "i3XLocationTracker"
     } ],
     "functions" : [ ],
-    "namespace" : [ {
-      "type" : "local",
-      "id" : "21d2c495-9bbe-4cab-b59e-e35e1acef7ba",
-      "name" : "Site1",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "0c25a6ed-cc53-467c-8b1e-77db4fa62566",
-      "name" : "AMRs",
-      "parentNamespaceId" : "21d2c495-9bbe-4cab-b59e-e35e1acef7ba",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "70dcf7b0-3c18-4cab-b9fd-7ad74e5188ab",
-      "name" : "AMR1",
-      "parentNamespaceId" : "0c25a6ed-cc53-467c-8b1e-77db4fa62566",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR1"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "61ac7e9d-19e7-4d52-9e55-c687495ef519",
-      "name" : "AMR2",
-      "parentNamespaceId" : "0c25a6ed-cc53-467c-8b1e-77db4fa62566",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR2"
-        }
-      }
-    } ],
+    "namespace" : [ ],
     "lookupMap" : [ {
       "name" : "Locations",
       "tags" : [ "i3XLocationTracker" ],
