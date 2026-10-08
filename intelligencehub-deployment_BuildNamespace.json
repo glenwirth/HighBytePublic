@@ -3202,7 +3202,7 @@
         "type" : "default"
       }
     }, {
-      "name" : "BuildNamespacei3XHistoryReads",
+      "name" : "BuildNamespace_i3XPIPointHistoricalRead",
       "tags" : [ "BuildNamespace" ],
       "inputStages" : [ "FirstIndex" ],
       "stages" : [ {
