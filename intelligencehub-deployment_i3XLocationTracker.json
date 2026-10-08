@@ -698,6 +698,176 @@
         "type" : "default"
       }
     }, {
+      "name" : "PopulateLocationsFromLookupMap_DuckDB",
+      "tags" : [ "i3XLocationTracker" ],
+      "inputStages" : [ "LocationsTableExists" ],
+      "stages" : [ {
+        "name" : "ToArrayAnd2ndLevel",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$spread(event.value).*"
+        },
+        "outputs" : [ "WriteLocations" ]
+      }, {
+        "name" : "LocationsTableExists",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "LocationsTableExists",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "Locations_DuckDB"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "ReadLocations" ]
+        },
+        "outputs" : [ "DeleteFromLocations" ]
+      }, {
+        "name" : "DeleteFromLocations",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : -45
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "DeleteFromLocations",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "Locations_DuckDB"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "ReadLocations" ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ReadLocations",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "LookupMap",
+            "name" : "Locations",
+            "path" : ""
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ToArrayAnd2ndLevel" ]
+      }, {
+        "name" : "WriteLocations",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.Locations_DuckDB}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc",
+          "qualifier" : {
+            "table" : "Locations",
+            "writeType" : "insert",
+            "whereColumn" : "",
+            "logAsJSON" : false,
+            "createOption" : "off",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : false,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
+        }
+      }, {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : false,
+          "interval" : {
+            "duration" : 1,
+            "units" : "Days"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
       "name" : "Site1AMR1",
       "tags" : [ "i3XLocationTracker" ],
       "inputStages" : [ "setMetadata" ],
@@ -1372,7 +1542,7 @@
     "functions" : [ ],
     "namespace" : [ {
       "type" : "local",
-      "id" : "375f1925-0732-472a-b721-c269f85de04b",
+      "id" : "7f57989d-3c59-4cd7-a665-9c65b9012920",
       "name" : "Site1",
       "metadata" : [ ],
       "reference" : {
@@ -1380,40 +1550,36 @@
       }
     }, {
       "type" : "local",
-      "id" : "532a3ec2-13d7-457e-8879-0a71d16dac0d",
+      "id" : "a54f7076-83ba-424d-afcc-b70a2c7e1af2",
       "name" : "AMRs",
-      "parentNamespaceId" : "375f1925-0732-472a-b721-c269f85de04b",
+      "parentNamespaceId" : "7f57989d-3c59-4cd7-a665-9c65b9012920",
       "metadata" : [ ],
       "reference" : {
         "type" : "Empty"
       }
     }, {
       "type" : "local",
-      "id" : "7a4001ba-3524-407a-95b8-1f2143143093",
+      "id" : "f8f082bd-d7ed-49e4-9c28-e2142239eef6",
       "name" : "AMR1",
-      "parentNamespaceId" : "532a3ec2-13d7-457e-8879-0a71d16dac0d",
+      "parentNamespaceId" : "a54f7076-83ba-424d-afcc-b70a2c7e1af2",
       "metadata" : [ ],
       "reference" : {
         "type" : "Instance",
         "name" : "Locations_Instance",
         "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR1"
-        }
+        "params" : { }
       }
     }, {
       "type" : "local",
-      "id" : "eea597e3-4932-42f5-bcf9-e3ad3514c7d4",
+      "id" : "ca3a748e-ba03-426f-bcbd-0450bffe3404",
       "name" : "AMR2",
-      "parentNamespaceId" : "532a3ec2-13d7-457e-8879-0a71d16dac0d",
+      "parentNamespaceId" : "a54f7076-83ba-424d-afcc-b70a2c7e1af2",
       "metadata" : [ ],
       "reference" : {
         "type" : "Instance",
         "name" : "Locations_Instance",
         "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR2"
-        }
+        "params" : { }
       }
     } ],
     "lookupMap" : [ {
