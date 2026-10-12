@@ -390,6 +390,48 @@
     "outputs" : [ ],
     "modeling" : {
       "models" : [ {
+        "name" : "HistoryReadsResults",
+        "description" : "Created from payload:\nAnyValue(type=ComplexData, value={\"elementId\":\"string\",\"value\":42,\"quality\":\"Good\",\"timestamp\":\"2026-01-01T00:05:00Z\"})",
+        "tags" : [ "BuildNamespace_PIAssetFramework", "i3X" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "elementId",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Int64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "quality",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "timestamp",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "DateTime"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
         "name" : "Namespace_PI",
         "tags" : [ "BuildNamespace_PIAssetFramework" ],
         "attributes" : [ {
@@ -788,6 +830,39 @@
               "variant" : "Any"
             }
           } ]
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "WriteResults",
+        "description" : "Created from payload:\nAnyValue(type=ComplexData, value={\"elementId\":\"string\",\"success\":true,\"message\":\"\"})",
+        "tags" : [ "BuildNamespace_PIAssetFramework", "i3X" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "elementId",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "success",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Boolean"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "message",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
         } ],
         "modelVersion" : ""
       } ],
