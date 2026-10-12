@@ -2312,7 +2312,7 @@
     }, {
       "name" : "BuildNamespace_PIAssetMetadataSource",
       "tags" : [ "BuildNamespace" ],
-      "inputStages" : [ "TestMessage" ],
+      "inputStages" : [ "SetDatabaseAndTopAssetName" ],
       "stages" : [ {
         "name" : "TestMessage",
         "display" : {
