@@ -1938,6 +1938,234 @@
       "errorHandler" : {
         "type" : "default"
       }
+    }, {
+      "name" : "BuildNamespace_i3XPIPointWrite",
+      "tags" : [ "BuildNamespace_PIAssetFramework" ],
+      "inputStages" : [ "FirstIndex" ],
+      "stages" : [ {
+        "name" : "BadKey",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "include",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "BadKey"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "filtered"
+        },
+        "outputs" : [ "SmartQuery" ]
+      }, {
+        "name" : "ModelFailure",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WriteResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].elementId"
+            }
+          }, {
+            "name" : "success",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            },
+            "defaultValue" : false
+          }, {
+            "name" : "message",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.writeResults"
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "PiPoint",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ "ModelFailure" ],
+          "connectionReference" : "{{Connection.BuildNamespace_PI}}",
+          "eventPath" : "",
+          "connectionType" : "osisoft.afsdk",
+          "qualifier" : {
+            "type" : "point",
+            "options" : {
+              "create" : true,
+              "updateOption" : "Insert"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "ModelSuccess" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "FirstIndex",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[0]"
+        },
+        "outputs" : [ "HandleSpaces" ]
+      }, {
+        "name" : "HandleSpaces",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "var path = event.value.elementId;\r\nevent.value.elementId = path.split('.').map(function (s) {\r\n  return /\\s/.test(s) ? '\"' + s + '\"' : s;\r\n}).join('.');\r\n\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "BadKey" ]
+      }, {
+        "name" : "SmartQuery",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SmartQueryConfig",
+          "query" : {
+            "from" : [ "{{event.metadata.filtered.elementId}}" ],
+            "where" : "",
+            "select" : {
+              "what" : [ "metadata" ],
+              "as" : "List",
+              "delim" : "."
+            }
+          },
+          "breakup" : false,
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "PIFormat" ]
+      }, {
+        "name" : "ModelSuccess",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WriteResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].elementId"
+            }
+          }, {
+            "name" : "success",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            },
+            "defaultValue" : true
+          }, {
+            "name" : "message",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "PIFormat",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const tag = event.value[0]._metadata.PointName;\r\nconst tagAndValue = {};\r\ntagAndValue[tag] = event.metadata.filtered.value.value;\r\nlet time = { \"time\": new Date(event.metadata.filtered.value.timestamp).toISOString() };\r\nlet payload = {...tagAndValue,...time}\r\n\r\nstage.setValue(payload);"
+        },
+        "outputs" : [ "PiPoint" ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
     } ],
     "tags" : [ {
       "name" : "BuildNamespace_PIAssetFramework"
