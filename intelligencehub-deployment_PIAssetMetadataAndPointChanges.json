@@ -1248,7 +1248,7 @@
         "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 8,
             "units" : "Hours"
@@ -1725,7 +1725,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 30,
             "units" : "Seconds"
@@ -1738,7 +1738,6 @@
       }
     }, {
       "name" : "ReadPointChangeJSONLimit100Offset100",
-      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
@@ -2450,7 +2449,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 30,
             "units" : "Seconds"
@@ -2463,7 +2462,6 @@
       }
     }, {
       "name" : "ReadPointChangesParquetLimit100Offset100",
-      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
