@@ -744,7 +744,6 @@
     "pipelines" : [ {
       "name" : "MetadataAssetAttributesToSQLite",
       "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to sqlite;",
-      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "AssetMetadataTableExists" ],
       "stages" : [ {
@@ -1262,7 +1261,6 @@
       }
     }, {
       "name" : "PopulateAssetsWithPointLookupMap",
-      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "Read" ],
       "stages" : [ {
@@ -1412,7 +1410,6 @@
       }
     }, {
       "name" : "ReadPointChangeJSONLimit100Offset0",
-      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
@@ -1740,8 +1737,336 @@
         "type" : "default"
       }
     }, {
+      "name" : "ReadPointChangeJSONLimit100Offset100",
+      "groupAs" : "/starter_hist_read_metadata_assets",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "SetPiplineName" ],
+      "stages" : [ {
+        "name" : "SetAddToTop",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.add"
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "SetPiplineName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupAssetWithPoints" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 4590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "{{event.metadata.PipelineName}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "ignore"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "LookupAssetWithPoints",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "LookupMap",
+            "name" : "AssetsWithPointsLimit100Offset100",
+            "path" : ""
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ArrayOfPointName" ]
+      }, {
+        "name" : "ArrayOfPointName",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.*.pointName[]"
+        },
+        "outputs" : [ "PointChanges" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1950,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SetKey" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "PointChanges",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PointChangesJSON",
+            "path" : "",
+            "params" : {
+              "PointsArray" : "{{event.value}}",
+              "SubscriptionId" : "{{event.metadata.PipelineName}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "SetAddToTop" ]
+      }, {
+        "name" : "SetKey",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupForPoint" ]
+      }, {
+        "name" : "ApplyModel",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "AssetAttributesAndPoints",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "assetId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.assetId"
+            }
+          }, {
+            "name" : "assetPath",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.assetPath"
+            }
+          }, {
+            "name" : "attributeId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeId"
+            }
+          }, {
+            "name" : "attributeName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeName"
+            }
+          }, {
+            "name" : "attributeDescription",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeDescription"
+            }
+          }, {
+            "name" : "attributeDataType",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeDataType"
+            }
+          }, {
+            "name" : "attributeUnits",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeUnits"
+            }
+          }, {
+            "name" : "pointID",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.pointID"
+            }
+          }, {
+            "name" : "pointName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.pointName"
+            }
+          }, {
+            "name" : "source",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.source"
+            }
+          }, {
+            "name" : "time",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.time"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.value"
+            }
+          }, {
+            "name" : "quality",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.quality"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "LookupForPoint",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".MergeReadConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "child",
+            "key" : "Lookup",
+            "reference" : {
+              "type" : "LookupMap",
+              "name" : "AssetsWithPointsLimit100Offset100",
+              "path" : "[\"{{event.value.Key}}\"]"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "ApplyModel" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
+          "interval" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
       "name" : "ReadPointChangesParquetLimit100Offset0",
-      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
@@ -2126,6 +2451,403 @@
         "config" : {
           "type" : ".TriggerPolled",
           "enabled" : false,
+          "interval" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "ReadPointChangesParquetLimit100Offset100",
+      "groupAs" : "/starter_hist_read_metadata_assets",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "SetPipelineName" ],
+      "stages" : [ {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 5940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "{{event.metadata.PipelineName}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "ignore"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "PointChanges",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PointChangesParquet",
+            "path" : "",
+            "params" : {
+              "PointsArray" : "{{event.value}}",
+              "SubscriptionId" : "{{event.metadata.PipelineName}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "WriteParquet" ]
+      }, {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const fileName = \"../appData/\" + stage.pipelineName +\".parquet\"\r\nstage.setMetadata(\"FileName\", fileName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupAssetWithPoints" ]
+      }, {
+        "name" : "Delay100ms",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 100,
+            "units" : "Milliseconds"
+          }
+        },
+        "outputs" : [ "SelectParquetData" ]
+      }, {
+        "name" : "SetPipelineName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetFileName" ]
+      }, {
+        "name" : "SelectParquetData",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PIPointSelectTransform",
+            "path" : "",
+            "params" : {
+              "FileName" : "{{event.metadata.FileName}}",
+              "Limit" : null,
+              "Offset" : null
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "LookupAssetWithPoints",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "LookupMap",
+            "name" : "AssetsWithPointsLimit100Offset100",
+            "path" : ""
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ArrayOfPointName" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1950,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SetKey" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "ArrayOfPointName",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.*.pointName[]"
+        },
+        "outputs" : [ "PointChanges" ]
+      }, {
+        "name" : "WriteParquet",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.File}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Delay100ms" ]
+      }, {
+        "name" : "ApplyModel",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "AssetAttributesAndPoints",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "assetId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.assetId"
+            }
+          }, {
+            "name" : "assetPath",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.assetPath"
+            }
+          }, {
+            "name" : "attributeId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeId"
+            }
+          }, {
+            "name" : "attributeName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeName"
+            }
+          }, {
+            "name" : "attributeDescription",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeDescription"
+            }
+          }, {
+            "name" : "attributeDataType",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeDataType"
+            }
+          }, {
+            "name" : "attributeUnits",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeUnits"
+            }
+          }, {
+            "name" : "pointID",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.pointID"
+            }
+          }, {
+            "name" : "pointName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.pointName"
+            }
+          }, {
+            "name" : "source",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.source"
+            }
+          }, {
+            "name" : "time",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.time"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.valueNumber"
+            }
+          }, {
+            "name" : "quality",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.quality"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "LookupForPoint",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".MergeReadConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "child",
+            "key" : "Lookup",
+            "reference" : {
+              "type" : "LookupMap",
+              "name" : "AssetsWithPointsLimit100Offset100",
+              "path" : "[\"{{event.value.Key}}\"]"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "ApplyModel" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SetKey",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupForPoint" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
           "interval" : {
             "duration" : 30,
             "units" : "Seconds"
