@@ -12,7 +12,7 @@
       "name" : "DuckDB",
       "uri" : "jdbc://localhost:443",
       "description" : "This Connection enables the query of local parquet files and supports the PI Point historical backfill solution.",
-      "tags" : [ "PIAssetMetadataAndPointChanges", "starter_pi_da" ],
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "writes" : {
         "flattenModeledValues" : false
       },
@@ -46,7 +46,7 @@
       "name" : "File",
       "uri" : "file://file",
       "description" : "This Connection enables management of local files and supports the PI Point historical backfill solution.",
-      "tags" : [ "PIAssetMetadataAndPointChanges", "starter_pi_da" ],
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "writes" : {
         "flattenModeledValues" : false
       },
@@ -78,7 +78,7 @@
       "name" : "MQTT",
       "uri" : "mqtt://localhost:1885",
       "description" : "This is a Connection to the Intelligence Hub MQTT broker created for the purpose of viewing Pipeline outputs.",
-      "tags" : [ "PIAssetMetadataAndPointChanges", "starter_pi_af", "starter_pi_da" ],
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "writes" : {
         "flattenModeledValues" : false
       },
@@ -116,7 +116,7 @@
       "name" : "PI",
       "uri" : "osisoft.afsdk://localhost:45290",
       "description" : "This is a Connection to AVEVA PI System.  The purpose of the Connection is to obtain data for starter solution examples and, specifically starter solutions related to PI Asset Framework.  HighByte note: this Connection uses a dedicated agent installed on a demo system EC2.",
-      "tags" : [ "PIAssetMetadataAndPointChanges", "starter_pi_af" ],
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "writes" : {
         "flattenModeledValues" : false
       },
@@ -165,7 +165,7 @@
     }, {
       "name" : "SQLite",
       "uri" : "jdbc.sqlite://sqlite",
-      "tags" : [ "PIAssetMetadataAndPointChanges", "starter_pi_af" ],
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "writes" : {
         "flattenModeledValues" : false
       },
@@ -744,7 +744,7 @@
     "pipelines" : [ {
       "name" : "MetadataAssetAttributesToSQLite",
       "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to sqlite;",
-      "groupAs" : "/starter_hist_read_metadata_assets",
+      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "AssetMetadataTableExists" ],
       "stages" : [ {
@@ -1262,7 +1262,7 @@
       }
     }, {
       "name" : "PopulateAssetsWithPointLookupMap",
-      "groupAs" : "/starter_hist_read_metadata_assets",
+      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "Read" ],
       "stages" : [ {
@@ -1412,7 +1412,7 @@
       }
     }, {
       "name" : "ReadPointChangeJSONLimit100Offset0",
-      "groupAs" : "/starter_hist_read_metadata_assets",
+      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
@@ -1741,7 +1741,7 @@
       }
     }, {
       "name" : "ReadPointChangesParquetLimit100Offset0",
-      "groupAs" : "/starter_hist_read_metadata_assets",
+      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
