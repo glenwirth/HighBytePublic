@@ -1738,7 +1738,7 @@
       }
     }, {
       "name" : "ReadPointChangeJSONLimit100Offset100",
-      "groupAs" : "/starter_hist_read_metadata_assets",
+      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
@@ -2463,7 +2463,7 @@
       }
     }, {
       "name" : "ReadPointChangesParquetLimit100Offset100",
-      "groupAs" : "/starter_hist_read_metadata_assets",
+      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
