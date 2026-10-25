@@ -2,8 +2,8 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.2",
-    "build" : "2026.9.22.1",
+    "version" : "4.5.4",
+    "build" : "2026.10.22.1",
     "stage" : "Release"
   },
   "project" : {
@@ -1459,6 +1459,58 @@
       }
     }, {
       "type" : "local",
+      "id" : "b0b4bb7c-8736-4222-8928-46778c94faf3",
+      "name" : "Fairbanks",
+      "parentNamespaceId" : "282b5110-29fe-4cce-9f86-0f1c48d4ecff",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Empty"
+      }
+    }, {
+      "type" : "local",
+      "id" : "e2a86f2e-9c24-4bea-8e6e-fdbf78e5bb63",
+      "name" : "Position",
+      "parentNamespaceId" : "b0b4bb7c-8736-4222-8928-46778c94faf3",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Position_Instance",
+        "path" : "",
+        "params" : {
+          "Latitude" : "64.8378",
+          "Longitude" : "-147.7164"
+        }
+      }
+    }, {
+      "type" : "local",
+      "id" : "5e4aee90-cbff-42db-a31f-335d2b49b911",
+      "name" : "Current",
+      "parentNamespaceId" : "b0b4bb7c-8736-4222-8928-46778c94faf3",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Current_Instance",
+        "path" : "",
+        "params" : {
+          "Location" : "Fairbanks"
+        }
+      }
+    }, {
+      "type" : "local",
+      "id" : "c72e042c-5c8c-453f-8ec1-1f0fac956b99",
+      "name" : "Forecast",
+      "parentNamespaceId" : "b0b4bb7c-8736-4222-8928-46778c94faf3",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Forecast_Instance",
+        "path" : "",
+        "params" : {
+          "Location" : "Fairbanks"
+        }
+      }
+    }, {
+      "type" : "local",
       "id" : "5111d2f3-f23c-4b21-adf8-f9302218f4cf",
       "name" : "Hollywood",
       "parentNamespaceId" : "282b5110-29fe-4cce-9f86-0f1c48d4ecff",
@@ -1492,7 +1544,7 @@
         "name" : "Current_Instance",
         "path" : "",
         "params" : {
-          "Location" : "Boston"
+          "Location" : "Hollywood"
         }
       }
     }, {
@@ -1564,59 +1616,6 @@
       }
     }, {
       "type" : "local",
-      "id" : "51e6b7f4-46de-4917-9985-948b369d333e",
-      "name" : "Portland",
-      "parentNamespaceId" : "282b5110-29fe-4cce-9f86-0f1c48d4ecff",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "8e8b4c9e-f614-44b3-8bf5-1d56e7d9b3c8",
-      "name" : "Position",
-      "parentNamespaceId" : "51e6b7f4-46de-4917-9985-948b369d333e",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Position_Instance",
-        "path" : "",
-        "params" : {
-          "Location" : null,
-          "Latitude" : "43.6602",
-          "Longitude" : "-70.2485"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "13a2d4ad-0ceb-403f-86bb-1285f9058897",
-      "name" : "Forecast",
-      "parentNamespaceId" : "51e6b7f4-46de-4917-9985-948b369d333e",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Forecast_Instance",
-        "path" : "",
-        "params" : {
-          "Location" : "Portland"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "23acfdad-5a26-43b8-b7f3-7572356de98b",
-      "name" : "Current",
-      "parentNamespaceId" : "51e6b7f4-46de-4917-9985-948b369d333e",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Current_Instance",
-        "path" : "",
-        "params" : {
-          "Location" : "Portland"
-        }
-      }
-    }, {
-      "type" : "local",
       "id" : "eabdacfe-00dd-4155-b38e-d8776a09dc40",
       "name" : "Pittsburgh",
       "parentNamespaceId" : "282b5110-29fe-4cce-9f86-0f1c48d4ecff",
@@ -1666,6 +1665,59 @@
         "path" : "",
         "params" : {
           "Location" : "Pittsburgh"
+        }
+      }
+    }, {
+      "type" : "local",
+      "id" : "51e6b7f4-46de-4917-9985-948b369d333e",
+      "name" : "Portland",
+      "parentNamespaceId" : "282b5110-29fe-4cce-9f86-0f1c48d4ecff",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Empty"
+      }
+    }, {
+      "type" : "local",
+      "id" : "8e8b4c9e-f614-44b3-8bf5-1d56e7d9b3c8",
+      "name" : "Position",
+      "parentNamespaceId" : "51e6b7f4-46de-4917-9985-948b369d333e",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Position_Instance",
+        "path" : "",
+        "params" : {
+          "Location" : null,
+          "Latitude" : "43.6602",
+          "Longitude" : "-70.2485"
+        }
+      }
+    }, {
+      "type" : "local",
+      "id" : "13a2d4ad-0ceb-403f-86bb-1285f9058897",
+      "name" : "Forecast",
+      "parentNamespaceId" : "51e6b7f4-46de-4917-9985-948b369d333e",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Forecast_Instance",
+        "path" : "",
+        "params" : {
+          "Location" : "Portland"
+        }
+      }
+    }, {
+      "type" : "local",
+      "id" : "23acfdad-5a26-43b8-b7f3-7572356de98b",
+      "name" : "Current",
+      "parentNamespaceId" : "51e6b7f4-46de-4917-9985-948b369d333e",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Current_Instance",
+        "path" : "",
+        "params" : {
+          "Location" : "Portland"
         }
       }
     }, {
