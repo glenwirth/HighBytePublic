@@ -745,26 +745,12 @@
       "name" : "MetadataAssetAttributesToSQLite",
       "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to sqlite;",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "AssetMetadataTableExists" ],
+      "inputStages" : [ "SetDatabaseAndTopAssetName" ],
       "stages" : [ {
-        "name" : "SetDatabaseAndTopAssetName",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "GetAssetChildren" ]
-      }, {
         "name" : "GetAssetChildren",
         "display" : {
           "position" : {
-            "x" : 1590,
+            "x" : 690,
             "y" : 0
           }
         },
@@ -791,7 +777,7 @@
         "name" : "ForEachAsset",
         "display" : {
           "position" : {
-            "x" : 2040,
+            "x" : 1140,
             "y" : -341
           },
           "size" : {
@@ -812,7 +798,7 @@
         },
         "outputs" : [ ]
       }, {
-        "name" : "AssetMetadataTableExists",
+        "name" : "SetDatabaseAndTopAssetName",
         "display" : {
           "position" : {
             "x" : 240,
@@ -821,118 +807,10 @@
         },
         "description" : "",
         "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "AssetMetadataTableExists",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "SQLite"
-          },
-          "handleGoodNoData" : true,
-          "goodNoDataOutputs" : [ "SetDatabaseAndTopAssetName" ]
-        },
-        "outputs" : [ "DeleteFromAssetMetadata" ]
-      }, {
-        "name" : "DeleteFromAssetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 704,
-            "y" : -171
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "DeleteFromAssetMetadata",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "SQLite"
-          },
-          "handleGoodNoData" : true,
-          "goodNoDataOutputs" : [ "SetDatabaseAndTopAssetName" ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "AssetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 465
-          },
-          "metadata" : {
-            "parent" : "ForEachAsset"
-          }
-        },
-        "description" : "The Stage moves the asset information to metadata.",
-        "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "HasParent" ]
-      }, {
-        "name" : "ReturnAsset",
-        "display" : {
-          "position" : {
-            "x" : 4950,
-            "y" : 465
-          },
-          "metadata" : {
-            "parent" : "ForEachAsset"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ForEachAttribute",
-        "display" : {
-          "position" : {
-            "x" : 2850,
-            "y" : 150
-          },
-          "size" : {
-            "width" : 1050,
-            "height" : 390
-          },
-          "metadata" : {
-            "parent" : "ForEachAsset"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "ApplyModel" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "SQLite" ]
-      }, {
-        "name" : "SetAttributesToSingleObject",
-        "display" : {
-          "position" : {
-            "x" : 4500,
-            "y" : 420
-          },
-          "metadata" : {
-            "parent" : "ForEachAsset"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "{\r\n    \"attributes\": event.value\r\n}"
-        },
-        "outputs" : [ "ReturnAsset" ]
+        "outputs" : [ "GetAssetChildren" ]
       }, {
         "name" : "asset_attributes_no_parent",
         "display" : {
@@ -964,39 +842,47 @@
         },
         "outputs" : [ "HasAttributes" ]
       }, {
-        "name" : "SQLite",
+        "name" : "HasAttributes",
         "display" : {
           "position" : {
-            "x" : 4050,
-            "y" : 300
+            "x" : 1500,
+            "y" : 465
           },
           "metadata" : {
             "parent" : "ForEachAsset"
           }
         },
-        "description" : "This Stage publishes the payload to the Intelligence Hub MQTT broker which is being used in this case to allow easy visualization of the output.",
+        "description" : "",
         "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.SQLite}}",
-          "eventPath" : "",
-          "connectionType" : "jdbc.sqlite",
-          "qualifier" : {
-            "table" : "AssetMetadata",
-            "writeType" : "insert",
-            "whereColumn" : "",
-            "logAsJSON" : false,
-            "createOption" : "create_and_update",
-            "tableCacheInterval" : {
-              "duration" : 1,
-              "units" : "Hours"
-            },
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.value[0].hasOwnProperty('attributes'))",
+            "outputs" : [ "GetAttributes" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "ReturnAsset" ],
+            "description" : "Default"
+          } ]
         },
-        "outputs" : [ "SetAttributesToSingleObject" ]
+        "outputs" : [ ]
+      }, {
+        "name" : "AssetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 465
+          },
+          "metadata" : {
+            "parent" : "ForEachAsset"
+          }
+        },
+        "description" : "The Stage moves the asset information to metadata.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "HasParent" ]
       }, {
         "name" : "GetAttributes",
         "display" : {
@@ -1015,11 +901,37 @@
         },
         "outputs" : [ "ArrayLengthGT0" ]
       }, {
-        "name" : "ArrayLengthGT0",
+        "name" : "ForEachAttribute",
         "display" : {
           "position" : {
-            "x" : 2400,
-            "y" : 420
+            "x" : 2850,
+            "y" : 150
+          },
+          "size" : {
+            "width" : 1500,
+            "height" : 390
+          },
+          "metadata" : {
+            "parent" : "ForEachAsset"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "ApplyModel" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "SetAttributesToSingleObject" ]
+      }, {
+        "name" : "HasParent",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 465
           },
           "metadata" : {
             "parent" : "ForEachAsset"
@@ -1029,12 +941,12 @@
         "config" : {
           "type" : ".SwitchConfig",
           "switchCases" : [ {
-            "expression" : "    return Boolean(event.value.length > 0)",
-            "outputs" : [ "ForEachAttribute" ],
-            "description" : "Value Is True"
+            "expression" : "return Boolean(event.metadata.parent != \"\")",
+            "outputs" : [ "asset_attributes_with_parent" ],
+            "description" : "NotEmpty"
           }, {
             "expression" : "return true",
-            "outputs" : [ "SetAttributesToSingleObject" ],
+            "outputs" : [ "asset_attributes_no_parent" ],
             "description" : "Default"
           } ]
         },
@@ -1070,10 +982,27 @@
         },
         "outputs" : [ "HasAttributes" ]
       }, {
-        "name" : "HasParent",
+        "name" : "SetAttributesToSingleObject",
         "display" : {
           "position" : {
-            "x" : 600,
+            "x" : 4500,
+            "y" : 420
+          },
+          "metadata" : {
+            "parent" : "ForEachAsset"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n    \"attributes\": event.value\r\n}"
+        },
+        "outputs" : [ "ReturnAsset" ]
+      }, {
+        "name" : "ReturnAsset",
+        "display" : {
+          "position" : {
+            "x" : 4950,
             "y" : 465
           },
           "metadata" : {
@@ -1082,24 +1011,15 @@
         },
         "description" : "",
         "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.parent != \"\")",
-            "outputs" : [ "asset_attributes_with_parent" ],
-            "description" : "NotEmpty"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "asset_attributes_no_parent" ],
-            "description" : "Default"
-          } ]
+          "type" : ".ReturnConfig"
         },
         "outputs" : [ ]
       }, {
-        "name" : "HasAttributes",
+        "name" : "ArrayLengthGT0",
         "display" : {
           "position" : {
-            "x" : 1500,
-            "y" : 465
+            "x" : 2400,
+            "y" : 420
           },
           "metadata" : {
             "parent" : "ForEachAsset"
@@ -1109,12 +1029,12 @@
         "config" : {
           "type" : ".SwitchConfig",
           "switchCases" : [ {
-            "expression" : "return Boolean(event.value[0].hasOwnProperty('attributes'))",
-            "outputs" : [ "GetAttributes" ],
+            "expression" : "    return Boolean(event.value.length > 0)",
+            "outputs" : [ "ForEachAttribute" ],
             "description" : "Value Is True"
           }, {
             "expression" : "return true",
-            "outputs" : [ "ReturnAsset" ],
+            "outputs" : [ "SetAttributesToSingleObject" ],
             "description" : "Default"
           } ]
         },
@@ -1217,12 +1137,12 @@
           } ],
           "expandArray" : false
         },
-        "outputs" : [ "ReturnAttribute" ]
+        "outputs" : [ "SQLite" ]
       }, {
         "name" : "ReturnAttribute",
         "display" : {
           "position" : {
-            "x" : 600,
+            "x" : 1050,
             "y" : 150
           },
           "metadata" : {
@@ -1234,6 +1154,169 @@
           "type" : ".ReturnConfig"
         },
         "outputs" : [ ]
+      }, {
+        "name" : "SQLite",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAttribute"
+          }
+        },
+        "description" : "This Stage publishes the payload to the Intelligence Hub MQTT broker which is being used in this case to allow easy visualization of the output.",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.SQLite}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "AssetMetadata",
+            "writeType" : "upsert",
+            "whereColumn" : "assetId = '{{this.assetId}}'  AND attributeId = '{{this.attributeId}}'",
+            "logAsJSON" : false,
+            "createOption" : "create_and_update",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "ReturnAttribute" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : false,
+          "interval" : {
+            "duration" : 8,
+            "units" : "Hours"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "MetadataAssetAttributesToSQLiteParentPipeline",
+      "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to sqlite;",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "SetDatabaseAndTopAssetName" ],
+      "stages" : [ {
+        "name" : "GetAssetChildren",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "This Stage reads the data from AVEVA PI System.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MetadataAssetChildren",
+            "path" : "",
+            "params" : {
+              "Database" : "{{event.metadata.Database}}",
+              "TopAssetName" : "{{event.metadata.TopAssetName}}",
+              "Parent" : null
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEachAsset" ]
+      }, {
+        "name" : "ForEachAsset",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "Subpipeline" ],
+          "stageTimeout" : {
+            "duration" : 5,
+            "units" : "Minutes"
+          }
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SetDatabaseAndTopAssetName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "GetAssetChildren" ]
+      }, {
+        "name" : "ReturnAsset",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAsset"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Subpipeline",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAsset"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SubPipelineConfig",
+          "failureOutputs" : [ ],
+          "reference" : "{{Pipeline.MetadataAssetAttributesToSQLiteSubpipeline}}"
+        },
+        "outputs" : [ "ReturnAsset" ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
@@ -1254,6 +1337,382 @@
             "units" : "Hours"
           },
           "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "MetadataAssetAttributesToSQLiteSubpipeline",
+      "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to sqlite;",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "AssetMetadata" ],
+      "stages" : [ {
+        "name" : "asset_attributes_no_parent",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 67
+          }
+        },
+        "description" : "This Stage reads the data from AVEVA PI System.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MetadataAssetAttributes",
+            "path" : "",
+            "params" : {
+              "Database" : "{{event.metadata.Database}}",
+              "Name" : "{{event.value._name}}",
+              "Parent" : null
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "HasAttributes" ]
+      }, {
+        "name" : "HasAttributes",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.value[0].hasOwnProperty('attributes'))",
+            "outputs" : [ "GetAttributes" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "SetAttributesToSingleObject" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "AssetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "The Stage moves the asset information to metadata.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "HasParent" ]
+      }, {
+        "name" : "GetAttributes",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : -120
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[0].attributes"
+        },
+        "outputs" : [ "ArrayLengthGT0" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 5040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ForEachAttribute",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : -270
+          },
+          "size" : {
+            "width" : 1500,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "ApplyModel" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "SetAttributesToSingleObject" ]
+      }, {
+        "name" : "HasParent",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.parent != \"\")",
+            "outputs" : [ "asset_attributes_with_parent" ],
+            "description" : "NotEmpty"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "asset_attributes_no_parent" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "asset_attributes_with_parent",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -67
+          }
+        },
+        "description" : "This Stage reads the data from AVEVA PI System.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MetadataAssetAttributes",
+            "path" : "",
+            "params" : {
+              "Database" : "{{event.metadata.Database}}",
+              "Name" : "{{event.value._name}}",
+              "Parent" : "{{event.metadata.parent}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "HasAttributes" ]
+      }, {
+        "name" : "SetAttributesToSingleObject",
+        "display" : {
+          "position" : {
+            "x" : 4590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n    \"attributes\": event.value\r\n}"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "ArrayLengthGT0",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : -120
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "    return Boolean(event.value.length > 0)",
+            "outputs" : [ "ForEachAttribute" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ApplyModel",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAttribute"
+          }
+        },
+        "description" : "This Stage applies the desired schema to the payload.",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "AssetAttributesAndPoints",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "assetId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.elementID"
+            }
+          }, {
+            "name" : "assetPath",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.assetPath"
+            }
+          }, {
+            "name" : "attributeId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.ID"
+            }
+          }, {
+            "name" : "attributeName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.name"
+            }
+          }, {
+            "name" : "attributeDescription",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.description"
+            }
+          }, {
+            "name" : "attributeDataType",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.dataType"
+            }
+          }, {
+            "name" : "attributeUnits",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.uom"
+            }
+          }, {
+            "name" : "pointID",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.point.ID"
+            }
+          }, {
+            "name" : "pointName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.point.name"
+            }
+          }, {
+            "name" : "source",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.Database"
+            }
+          }, {
+            "name" : "time",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.timestamp"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            }
+          }, {
+            "name" : "quality",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "SQLite" ]
+      }, {
+        "name" : "ReturnAttribute",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAttribute"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SQLite",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAttribute"
+          }
+        },
+        "description" : "This Stage publishes the payload to the Intelligence Hub MQTT broker which is being used in this case to allow easy visualization of the output.",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.SQLite}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "AssetMetadata",
+            "writeType" : "upsert",
+            "whereColumn" : "assetId = '{{this.assetId}}'  AND attributeId = '{{this.attributeId}}'",
+            "logAsJSON" : false,
+            "createOption" : "create_and_update",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "ReturnAttribute" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
         }
       } ],
       "errorHandler" : {
