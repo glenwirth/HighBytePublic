@@ -1001,12 +1001,12 @@
         "name" : "ForEach",
         "display" : {
           "position" : {
-            "x" : 283,
-            "y" : -129
+            "x" : 690,
+            "y" : -285
           },
           "size" : {
-            "width" : 5950,
-            "height" : 460
+            "width" : 6000,
+            "height" : 660
           },
           "metadata" : { }
         },
@@ -1022,11 +1022,65 @@
         },
         "outputs" : [ ]
       }, {
+        "name" : "GetKeysWhoseValuesAreObjects",
+        "display" : {
+          "position" : {
+            "x" : 1950,
+            "y" : 217
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "Get parameter key by assuming that they are the ones that are type 'object\". ",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$merge(event.value[$type($.*[0]) = \"object\"]).*[]"
+        },
+        "outputs" : [ "WithUpdatedParameters" ]
+      }, {
+        "name" : "ClosedStatus",
+        "display" : {
+          "position" : {
+            "x" : 3750,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "Set status to Closed",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const status = { \"status\": \"Closed\" };\r\nstage.setValue(status);"
+        },
+        "outputs" : [ "SQLite" ]
+      }, {
+        "name" : "OneSecond",
+        "display" : {
+          "position" : {
+            "x" : 5100,
+            "y" : 285
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "Short delay to wait for previous message to complete.",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "Return" ]
+      }, {
         "name" : "PostMessage",
         "display" : {
           "position" : {
-            "x" : 3350,
-            "y" : 117
+            "x" : 3300,
+            "y" : 217
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1042,11 +1096,63 @@
         },
         "outputs" : [ "ClosedStatus" ]
       }, {
+        "name" : "SQLite",
+        "display" : {
+          "position" : {
+            "x" : 4200,
+            "y" : 285
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "Update status in SQLite",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MsiMessages}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "Messages",
+            "writeType" : "update",
+            "whereColumn" : "_id = {{event.metadata.filtered._id}}",
+            "logAsJSON" : false,
+            "createOption" : "off",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false,
+            "type" : "Tag"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "InprocessNoReturn" ]
+      }, {
+        "name" : "XMLFormat",
+        "display" : {
+          "position" : {
+            "x" : 2850,
+            "y" : 217
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "Convert JSON to XML",
+        "config" : {
+          "type" : ".XMLFormatConfig",
+          "outgoingType" : "String"
+        },
+        "outputs" : [ "PostMessage" ]
+      }, {
         "name" : "WithUpdatedParameters",
         "display" : {
           "position" : {
-            "x" : 2450,
-            "y" : 117
+            "x" : 2400,
+            "y" : 217
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1285,56 +1391,11 @@
         },
         "outputs" : [ "XMLFormat" ]
       }, {
-        "name" : "Filter",
-        "display" : {
-          "position" : {
-            "x" : 200,
-            "y" : 185
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "Preserve values in metadata.",
-        "config" : {
-          "type" : ".AttributeFilterConfig",
-          "filterOption" : "exclude",
-          "filterList" : [ {
-            "filterType" : "exactPathFilter",
-            "filterText" : "_id"
-          }, {
-            "filterType" : "exactPathFilter",
-            "filterText" : "_name"
-          }, {
-            "filterType" : "exactPathFilter",
-            "filterText" : "_timestamp"
-          } ],
-          "retainAsMetadata" : true,
-          "metadataKey" : "filtered"
-        },
-        "outputs" : [ "MsiMessageContainer_MsiOrderParameterMessage", "InprocessStatus" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 5600,
-            "y" : 185
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
         "name" : "InprocessStatus",
         "display" : {
           "position" : {
-            "x" : 3800,
-            "y" : 320
+            "x" : 3750,
+            "y" : 420
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1347,36 +1408,11 @@
         },
         "outputs" : [ "SQLite" ]
       }, {
-        "name" : "InprocessNoReturn",
-        "display" : {
-          "position" : {
-            "x" : 4700,
-            "y" : 185
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "Only return if status is equal to Inprocess.",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.value.status === 'Inprocess')",
-            "outputs" : [ ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "OneSecond" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
         "name" : "MsiMessageContainer_MsiOrderParameterMessage",
         "display" : {
           "position" : {
-            "x" : 650,
-            "y" : 117
+            "x" : 600,
+            "y" : 217
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1615,46 +1651,73 @@
         },
         "outputs" : [ "MsiMessageContainer" ]
       }, {
-        "name" : "SQLite",
+        "name" : "Filter",
         "display" : {
           "position" : {
-            "x" : 4250,
-            "y" : 185
+            "x" : 150,
+            "y" : 285
           },
           "metadata" : {
             "parent" : "ForEach"
           }
         },
-        "description" : "Update status in SQLite",
+        "description" : "Preserve values in metadata.",
         "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.MsiMessages}}",
-          "eventPath" : "",
-          "connectionType" : "jdbc.sqlite",
-          "qualifier" : {
-            "table" : "Messages",
-            "writeType" : "update",
-            "whereColumn" : "_id = {{event.metadata.filtered._id}}",
-            "logAsJSON" : false,
-            "createOption" : "off",
-            "tableCacheInterval" : {
-              "duration" : 1,
-              "units" : "Hours"
-            },
-            "breakupArrays" : false,
-            "type" : "Tag"
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "_id"
+          }, {
+            "filterType" : "exactPathFilter",
+            "filterText" : "_name"
+          }, {
+            "filterType" : "exactPathFilter",
+            "filterText" : "_timestamp"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "filtered"
         },
-        "outputs" : [ "InprocessNoReturn" ]
+        "outputs" : [ "MsiMessageContainer_MsiOrderParameterMessage", "InprocessStatus" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 5550,
+            "y" : 285
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ConvertMsiOrderParameterMessageToArray",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 217
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "Get MsiOrderParameterMessage from metadata and separate them into an array.",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$spread(event.metadata.message.MsiMessageContainer.message.MsiOrderParameterMessage)"
+        },
+        "outputs" : [ "GetKeysWhoseValuesAreObjects" ]
       }, {
         "name" : "MsiMessageContainer",
         "display" : {
           "position" : {
-            "x" : 1100,
-            "y" : 117
+            "x" : 1050,
+            "y" : 217
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1673,28 +1736,36 @@
         },
         "outputs" : [ "ConvertMsiOrderParameterMessageToArray" ]
       }, {
-        "name" : "ConvertMsiOrderParameterMessageToArray",
+        "name" : "InprocessNoReturn",
         "display" : {
           "position" : {
-            "x" : 1550,
-            "y" : 117
+            "x" : 4650,
+            "y" : 285
           },
           "metadata" : {
             "parent" : "ForEach"
           }
         },
-        "description" : "Get MsiOrderParameterMessage from metadata and separate them into an array.",
+        "description" : "Only return if status is equal to Inprocess.",
         "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "$spread(event.metadata.message.MsiMessageContainer.message.MsiOrderParameterMessage)"
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.value.status === 'Inprocess')",
+            "outputs" : [ ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "OneSecond" ],
+            "description" : "Default"
+          } ]
         },
-        "outputs" : [ "GetKeysWhoseValuesAreObjects" ]
+        "outputs" : [ ]
       }, {
         "name" : "ErrorStatus",
         "display" : {
           "position" : {
-            "x" : 3800,
-            "y" : 185
+            "x" : 3750,
+            "y" : 285
           },
           "metadata" : {
             "parent" : "ForEach"
@@ -1706,77 +1777,6 @@
           "transformExpression" : "const status = { \"status\": \"Error\" };\r\nconst errorMessage = { \"errorMessage\": event.metadata.writeResults[0] }\r\nlet payload = {...status,...errorMessage};\r\nstage.setValue(payload);"
         },
         "outputs" : [ "SQLite" ]
-      }, {
-        "name" : "OneSecond",
-        "display" : {
-          "position" : {
-            "x" : 5150,
-            "y" : 185
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "Short delay to wait for previous message to complete.",
-        "config" : {
-          "type" : ".DelayConfig",
-          "delay" : {
-            "duration" : 1,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "Return" ]
-      }, {
-        "name" : "GetKeysWhoseValuesAreObjects",
-        "display" : {
-          "position" : {
-            "x" : 2000,
-            "y" : 117
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "Get parameter key by assuming that they are the ones that are type 'object\". ",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "$merge(event.value[$type($.*[0]) = \"object\"]).*[]"
-        },
-        "outputs" : [ "WithUpdatedParameters" ]
-      }, {
-        "name" : "ClosedStatus",
-        "display" : {
-          "position" : {
-            "x" : 3800,
-            "y" : 50
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "Set status to Closed",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const status = { \"status\": \"Closed\" };\r\nstage.setValue(status);"
-        },
-        "outputs" : [ "SQLite" ]
-      }, {
-        "name" : "XMLFormat",
-        "display" : {
-          "position" : {
-            "x" : 2900,
-            "y" : 117
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "Convert JSON to XML",
-        "config" : {
-          "type" : ".XMLFormatConfig",
-          "outgoingType" : "String"
-        },
-        "outputs" : [ "PostMessage" ]
       } ],
       "trackActivity" : true,
       "queueSize" : 10000,
@@ -1791,7 +1791,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 5,
             "units" : "Seconds"
