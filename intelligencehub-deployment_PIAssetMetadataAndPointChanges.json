@@ -612,6 +612,40 @@
       "parameters" : {
         "type" : "EmptyParameters"
       }
+    }, {
+      "name" : "DeleteFromLastRunTime",
+      "connection" : "SQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "Delete FROM LastRunTime;"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "LastRunTime",
+      "connection" : "SQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "Select * from LastRunTime"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
     } ],
     "outputs" : [ ],
     "modeling" : {
@@ -735,6 +769,38 @@
           "array" : false,
           "internalType" : {
             "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "LastRunTime",
+        "tags" : [ "PIAssetMetadataAndPointChanges" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "PipelineName",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "LastRunTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "DateTime"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "RunTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "DateTime"
           }
         } ],
         "modelVersion" : ""
@@ -1303,8 +1369,8 @@
         "name" : "Subpipeline",
         "display" : {
           "position" : {
-            "x" : 150,
-            "y" : 150
+            "x" : 141,
+            "y" : 148
           },
           "metadata" : {
             "parent" : "ForEachAsset"
@@ -1870,101 +1936,12 @@
     }, {
       "name" : "ReadPointChangeJSONLimit100Offset0",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "SetPiplineName" ],
+      "inputStages" : [ "GetLastRunTime" ],
       "stages" : [ {
-        "name" : "SetAddToTop",
-        "display" : {
-          "position" : {
-            "x" : 2040,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.add"
-        },
-        "outputs" : [ "ForEach" ]
-      }, {
-        "name" : "SetPiplineName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "LookupAssetWithPoints" ]
-      }, {
-        "name" : "MQTT",
-        "display" : {
-          "position" : {
-            "x" : 4590,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.MQTT}}",
-          "eventPath" : "",
-          "connectionType" : "mqtt",
-          "qualifier" : {
-            "topic" : "{{event.metadata.PipelineName}}",
-            "qos" : 0,
-            "namedRoot" : false,
-            "retained" : true,
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "ignore"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "LookupAssetWithPoints",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "LookupMap",
-            "name" : "AssetsWithPointsLimit100Offset0",
-            "path" : ""
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "ArrayOfPointName" ]
-      }, {
-        "name" : "ArrayOfPointName",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.*.pointName[]"
-        },
-        "outputs" : [ "PointChanges" ]
-      }, {
         "name" : "ForEach",
         "display" : {
           "position" : {
-            "x" : 2490,
+            "x" : 3390,
             "y" : -150
           },
           "size" : {
@@ -1985,10 +1962,73 @@
         },
         "outputs" : [ "MQTT" ]
       }, {
-        "name" : "PointChanges",
+        "name" : "LookupAssetWithPoints",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "LookupMap",
+            "name" : "AssetsWithPointsLimit100Offset0",
+            "path" : ""
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ArrayOfPointName" ]
+      }, {
+        "name" : "ArrayOfPointName",
         "display" : {
           "position" : {
             "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.*.pointName[]"
+        },
+        "outputs" : [ "GetRunTime" ]
+      }, {
+        "name" : "SetLastRunTime",
+        "display" : {
+          "position" : {
+            "x" : 5940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunLastTime\r\nstate.pipeline.set(\"RunLastTime\", event.metadata.RunTime);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LastRunTime" ]
+      }, {
+        "name" : "GetRunTime",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"RunTime\", new Date().toISOString());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "PointChanges" ]
+      }, {
+        "name" : "PointChanges",
+        "display" : {
+          "position" : {
+            "x" : 2490,
             "y" : 0
           }
         },
@@ -2011,10 +2051,145 @@
         },
         "outputs" : [ "SetAddToTop" ]
       }, {
-        "name" : "SetKey",
+        "name" : "WriteLastRunTime",
         "display" : {
           "position" : {
-            "x" : 150,
+            "x" : 6840,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.SQLite}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "LastRunTime",
+            "writeType" : "insert",
+            "whereColumn" : "",
+            "logAsJSON" : false,
+            "createOption" : "create_and_update",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "GetLastRunTime",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set initial last run time\r\nlet initialLastRunTime = new Date('2026-10-01T00:00:00.000Z');\r\nlet runLastTime = new Date(state.pipeline.get(\"RunTime\", initialLastRunTime));\r\n// set startTime metadata\r\nstage.setMetadata(\"LastRunTime\", runLastTime.toISOString());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetPiplineName" ]
+      }, {
+        "name" : "LastRunTime",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "LastRunTime",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "PipelineName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.PipelineName"
+            }
+          }, {
+            "name" : "LastRunTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.LastRunTime"
+            }
+          }, {
+            "name" : "RunTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.RunTime"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WriteLastRunTime" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 5490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "{{event.metadata.PipelineName}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "ignore"
+        },
+        "outputs" : [ "SetLastRunTime" ]
+      }, {
+        "name" : "SetAddToTop",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.add"
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "SetPiplineName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupAssetWithPoints" ]
+      }, {
+        "name" : "LookupForPoint",
+        "display" : {
+          "position" : {
+            "x" : 600,
             "y" : 150
           },
           "metadata" : {
@@ -2023,10 +2198,21 @@
         },
         "description" : "",
         "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
+          "type" : ".MergeReadConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "child",
+            "key" : "Lookup",
+            "reference" : {
+              "type" : "LookupMap",
+              "name" : "AssetsWithPointsLimit100Offset0",
+              "path" : "[\"{{event.value.Key}}\"]"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
         },
-        "outputs" : [ "LookupForPoint" ]
+        "outputs" : [ "ApplyModel" ]
       }, {
         "name" : "ApplyModel",
         "display" : {
@@ -2127,10 +2313,10 @@
         },
         "outputs" : [ "Return" ]
       }, {
-        "name" : "LookupForPoint",
+        "name" : "SetKey",
         "display" : {
           "position" : {
-            "x" : 600,
+            "x" : 150,
             "y" : 150
           },
           "metadata" : {
@@ -2139,21 +2325,10 @@
         },
         "description" : "",
         "config" : {
-          "type" : ".MergeReadConfig",
-          "failureOutputs" : [ ],
-          "keyReferences" : [ {
-            "location" : "child",
-            "key" : "Lookup",
-            "reference" : {
-              "type" : "LookupMap",
-              "name" : "AssetsWithPointsLimit100Offset0",
-              "path" : "[\"{{event.value.Key}}\"]"
-            }
-          } ],
-          "inputValueLocation" : "inline",
-          "inputValueKey" : "eventIn"
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "ApplyModel" ]
+        "outputs" : [ "LookupForPoint" ]
       }, {
         "name" : "Return",
         "display" : {
