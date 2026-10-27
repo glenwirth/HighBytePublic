@@ -2384,7 +2384,7 @@
           "type" : ".TriggerPolled",
           "enabled" : true,
           "interval" : {
-            "duration" : 30,
+            "duration" : 5,
             "units" : "Seconds"
           },
           "mode" : "interval"
