@@ -504,6 +504,74 @@
         }
       }
     }, {
+      "name" : "PointsParquet",
+      "connection" : "PI",
+      "type" : "osisoft.afsdk",
+      "qualifier" : {
+        "type" : "point",
+        "options" : {
+          "get" : "rawValues",
+          "includeMetaData" : false,
+          "includeChildren" : true,
+          "useReference" : true,
+          "format" : "Parquet",
+          "points" : [ ],
+          "query" : "",
+          "index" : false,
+          "indexWindow" : "",
+          "reference" : "{{this.PointsArray}}",
+          "calcBasis" : "timeWeighted",
+          "boundaryType" : "inside",
+          "startTime" : "{{this.StartTime}}",
+          "endTime" : "{{this.EndTime}}"
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "PointsArray",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "StartTime",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "2025-11-01T00:00:00.000Z",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "EndTime",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "2025-11-01T00:01:00.000Z",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
       "name" : "AssetMetadataTableExists",
       "connection" : "SQLite",
       "type" : "jdbc.sqlite",
@@ -598,11 +666,44 @@
         "type" : "EmptyParameters"
       }
     }, {
-      "name" : "MissedPointChanges",
+      "name" : "DeleteFromMissedPointChangesBy_Id",
       "connection" : "SQLite",
       "type" : "jdbc.sqlite",
       "qualifier" : {
-        "query" : "Select * from MissedPointChanges"
+        "query" : "Delete from MissedPointChanges where _id = {{this.Id}}"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Id",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : -1,
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "MissedPointChangesLimit1",
+      "connection" : "SQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "Select * from MissedPointChanges order by _id limit 1"
       },
       "cacheLifetime" : {
         "enabled" : false
@@ -755,6 +856,15 @@
         }, {
           "attributeType" : "Internal",
           "name" : "PipelineName",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "ArrayOfPoints",
           "nullable" : false,
           "required" : false,
           "array" : false,
@@ -1920,6 +2030,358 @@
         "type" : "default"
       }
     }, {
+      "name" : "ReadHistoricalBackfillValueFromMissedPointChanges",
+      "description" : "This Pipeline executes many times to index through a time period of historical PI Point value changes.  The Pipeline obtains data from PI Data Archive and models the data before formatting it into an array.  The modeled data would typically be written to a file for a data lake or written directly to a data warehouse table.  The dates for the time period and the index interval time are stored in JavaScript Stages that must be edited.  A date is also stored as a State Variable that must be deleted to reset the Pipeline.  The solution relies on a Parquet file that is stored locally.",
+      "groupAs" : "/starter_hist_read_event",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "SetPipelineName" ],
+      "stages" : [ {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "This JavaScript Stage establishes the name of the file that the Pipeline writes to.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "MissedPointChanges" ]
+      }, {
+        "name" : "MissedPointChangesToMetadata",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "include",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "BadKey"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "MissedPointChanges"
+        },
+        "outputs" : [ "SetIntervalMilliseconds" ]
+      }, {
+        "name" : "SetPipelineName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetFileName" ]
+      }, {
+        "name" : "DeleteFromMissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "DeleteFromMissedPointChangesBy_Id",
+            "path" : "",
+            "params" : {
+              "Id" : "{{event.metadata.MissedPointChanges._id}}"
+            },
+            "connectionName" : "SQLite"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "MissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MissedPointChangesLimit1",
+            "path" : "[0]",
+            "params" : { },
+            "connectionName" : "SQLite"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "MissedPointChangesToMetadata" ]
+      }, {
+        "name" : "SetIntervalMilliseconds",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const intervalSeconds = 60;\r\nconst intervalMilliseconds = intervalSeconds * 1000;\r\nstage.setMetadata(\"IntervalMilliseconds\", intervalMilliseconds);\r\n\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "while" ]
+      }, {
+        "name" : "while",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 3750,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "This loop processes each batch of PI Point value changes.  ",
+        "config" : {
+          "type" : ".WhileLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SetStartTime" ],
+          "stageTimeout" : {
+            "duration" : 5,
+            "units" : "Minutes"
+          },
+          "expression" : "return new Date(loop.metadata.EndTime) < new Date(loop.metadata.MissedPointChanges.CurrentSubscriptionTime)",
+          "loopValue" : "LAST_RETURN"
+        },
+        "outputs" : [ "DeleteFromMissedPointChanges" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 3300,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "PointsParquet",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "The Stage reads the value changes from PI Data Archive for the parameterized start and end time and tag list saved as a reference for the PI Connection Input.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PointsParquet",
+            "path" : "",
+            "params" : {
+              "PointsArray" : "{{event.metadata.MissedPointChanges.ArrayOfPoints}}",
+              "StartTime" : null,
+              "EndTime" : null
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "WriteFile" ]
+      }, {
+        "name" : "ReadParquet",
+        "display" : {
+          "position" : {
+            "x" : 2400,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PIPointSelectTransform",
+            "path" : "",
+            "params" : {
+              "FileName" : "{{event.metadata.FileName}}"
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "SetStartTime",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "let startTime = new Date(event.metadata.MissedPointChanges.LastRunMaxTime);\r\n// add one millisecond and IntervalMilliseconds * loopIndex\r\nstartTime = startTime.getTime() + 1 + (event.metadata.IntervalMilliseconds * event.metadata.loopIndex);\r\nstage.setMetadata(\"StartTime\", new Date(startTime).toISOString());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetEndTime" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 2850,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "In this example value change arrays are being written to the Intelligence Hub MQTT broker for ease of visibility.  ",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "Historical_Backfill_PI_DA",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "filterList" : [ "_name", "_model", "_timestamp" ]
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "One00ms",
+        "display" : {
+          "position" : {
+            "x" : 1950,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 100,
+            "units" : "Milliseconds"
+          }
+        },
+        "outputs" : [ "ReadParquet" ]
+      }, {
+        "name" : "SetEndTime",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "let endTime = new Date(event.metadata.MissedPointChanges.LastRunMaxTime);\r\nendTime = endTime.getTime() + (event.metadata.IntervalMilliseconds * (event.metadata.loopIndex + 1));\r\nif (new Date(endTime) > event.metadata.MissedPointChanges.CurrentSubscriptionTime)\r\n{\r\n    endTime = event.metadata.MissedPointChanges.CurrentSubscriptionTime;\r\n}\r\nstage.setMetadata(\"EndTime\", new Date(endTime).toISOString());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "PointsParquet" ]
+      }, {
+        "name" : "WriteFile",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "This Stage writes the payload to a local parquet file. ",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.file}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "One00ms" ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : false,
+          "interval" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
       "name" : "ReadPointChangeJSONLimit100Offset0",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "GetLastRunMaxTime" ],
@@ -1941,7 +2403,7 @@
         "name" : "PointChanges",
         "display" : {
           "position" : {
-            "x" : 2490,
+            "x" : 2940,
             "y" : 0
           }
         },
@@ -1964,10 +2426,24 @@
         },
         "outputs" : [ "SetAddToTop" ]
       }, {
+        "name" : "SetArrayOfPoints",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"ArrayOfPoints\", event.value);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetCurrentTime" ]
+      }, {
         "name" : "MQTT",
         "display" : {
           "position" : {
-            "x" : 5490,
+            "x" : 5940,
             "y" : -142
           }
         },
@@ -2028,7 +2504,7 @@
         "name" : "ForEach",
         "display" : {
           "position" : {
-            "x" : 3390,
+            "x" : 3840,
             "y" : -292
           },
           "size" : {
@@ -2052,7 +2528,7 @@
         "name" : "SetCurrentTime",
         "display" : {
           "position" : {
-            "x" : 2040,
+            "x" : 2490,
             "y" : 0
           }
         },
@@ -2066,7 +2542,7 @@
         "name" : "MissedPointChanges",
         "display" : {
           "position" : {
-            "x" : 2940,
+            "x" : 3390,
             "y" : 142
           }
         },
@@ -2080,13 +2556,19 @@
             "name" : "Id",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : ""
+              "expression" : "return event.id;"
             }
           }, {
             "name" : "PipelineName",
             "expression" : {
               "type" : "PipelineStageReference",
               "stageReference" : "event.metadata.PipelineName"
+            }
+          }, {
+            "name" : "ArrayOfPoints",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.ArrayOfPoints"
             }
           }, {
             "name" : "LastRunMaxTime",
@@ -2114,7 +2596,7 @@
         "name" : "SortTime",
         "display" : {
           "position" : {
-            "x" : 5940,
+            "x" : 6390,
             "y" : -142
           }
         },
@@ -2123,12 +2605,12 @@
           "type" : ".JSONataTransformConfig",
           "transformExpression" : "$sort(event.value[].time)"
         },
-        "outputs" : [ ]
+        "outputs" : [ "SetRunMaxTimeToLast" ]
       }, {
         "name" : "WriteMissedPointChanges",
         "display" : {
           "position" : {
-            "x" : 4215,
+            "x" : 4665,
             "y" : 142
           }
         },
@@ -2168,12 +2650,12 @@
           "type" : ".JSONataTransformConfig",
           "transformExpression" : "event.value.*.pointName[]"
         },
-        "outputs" : [ "SetCurrentTime" ]
+        "outputs" : [ "SetArrayOfPoints" ]
       }, {
         "name" : "SetAddToTop",
         "display" : {
           "position" : {
-            "x" : 2940,
+            "x" : 3390,
             "y" : -142
           }
         },
@@ -2187,7 +2669,7 @@
         "name" : "SetRunMaxTime",
         "display" : {
           "position" : {
-            "x" : 5490,
+            "x" : 5940,
             "y" : 142
           }
         },
@@ -2357,8 +2839,22 @@
           "expandArray" : false
         },
         "outputs" : [ "Return" ]
+      }, {
+        "name" : "SetRunMaxTimeToLast",
+        "display" : {
+          "position" : {
+            "x" : 6896,
+            "y" : -142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.value[event.value.length-1]);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ ]
       } ],
-      "trackActivity" : false,
+      "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -2385,26 +2881,12 @@
     }, {
       "name" : "ReadPointChangeJSONLimit100Offset100",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "SetPiplineName" ],
+      "inputStages" : [ "GetLastRunMaxTime" ],
       "stages" : [ {
-        "name" : "SetAddToTop",
-        "display" : {
-          "position" : {
-            "x" : 2040,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.add"
-        },
-        "outputs" : [ "ForEach" ]
-      }, {
         "name" : "SetPiplineName",
         "display" : {
           "position" : {
-            "x" : 240,
+            "x" : 690,
             "y" : 0
           }
         },
@@ -2415,11 +2897,51 @@
         },
         "outputs" : [ "LookupAssetWithPoints" ]
       }, {
+        "name" : "PointChanges",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PointChangesJSON",
+            "path" : "",
+            "params" : {
+              "PointsArray" : "{{event.value}}",
+              "SubscriptionId" : "{{event.metadata.PipelineName}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "MissedPointChanges" ]
+        },
+        "outputs" : [ "SetAddToTop" ]
+      }, {
+        "name" : "SetArrayOfPoints",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"ArrayOfPoints\", event.value);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetCurrentTime" ]
+      }, {
         "name" : "MQTT",
         "display" : {
           "position" : {
-            "x" : 4590,
-            "y" : 0
+            "x" : 5940,
+            "y" : -142
           }
         },
         "description" : "",
@@ -2437,14 +2959,14 @@
             "breakupArrays" : false
           },
           "qualifierExpression" : "",
-          "writeReturn" : "ignore"
+          "writeReturn" : "completion"
         },
-        "outputs" : [ ]
+        "outputs" : [ "SortTime" ]
       }, {
         "name" : "LookupAssetWithPoints",
         "display" : {
           "position" : {
-            "x" : 690,
+            "x" : 1140,
             "y" : 0
           }
         },
@@ -2462,25 +2984,25 @@
         },
         "outputs" : [ "ArrayOfPointName" ]
       }, {
-        "name" : "ArrayOfPointName",
+        "name" : "GetLastRunMaxTime",
         "display" : {
           "position" : {
-            "x" : 1140,
+            "x" : 240,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.*.pointName[]"
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set initial last run time\r\nlet initialLastRunMaxTime = new Date('2026-10-01T00:00:00.000Z');\r\nlet runLastMaxTime = new Date(state.pipeline.get(\"RunMaxTime\", initialLastRunMaxTime));\r\nstage.setMetadata(\"LastRunMaxTime\", runLastMaxTime.toISOString());\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "PointChanges" ]
+        "outputs" : [ "SetPiplineName" ]
       }, {
         "name" : "ForEach",
         "display" : {
           "position" : {
-            "x" : 2490,
-            "y" : -150
+            "x" : 3840,
+            "y" : -292
           },
           "size" : {
             "width" : 1950,
@@ -2500,7 +3022,120 @@
         },
         "outputs" : [ "MQTT" ]
       }, {
-        "name" : "PointChanges",
+        "name" : "SetCurrentTime",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"CurrentTime\", new Date());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "PointChanges" ]
+      }, {
+        "name" : "MissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : 142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "MissedPointChanges",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Id",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.id;"
+            }
+          }, {
+            "name" : "PipelineName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.PipelineName"
+            }
+          }, {
+            "name" : "ArrayOfPoints",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.ArrayOfPoints"
+            }
+          }, {
+            "name" : "LastRunMaxTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.LastRunMaxTime"
+            }
+          }, {
+            "name" : "CurrentSubscriptionTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.CurrentTime"
+            }
+          }, {
+            "name" : "BackfillEndTime",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WriteMissedPointChanges" ]
+      }, {
+        "name" : "SortTime",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : -142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$sort(event.value[].time)"
+        },
+        "outputs" : [ "SetRunMaxTimeToLast" ]
+      }, {
+        "name" : "WriteMissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 4665,
+            "y" : 142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.SQLite}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "MissedPointChanges",
+            "writeType" : "insert",
+            "whereColumn" : "",
+            "logAsJSON" : false,
+            "createOption" : "create_and_update",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "SetRunMaxTime" ]
+      }, {
+        "name" : "ArrayOfPointName",
         "display" : {
           "position" : {
             "x" : 1590,
@@ -2509,22 +3144,54 @@
         },
         "description" : "",
         "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "PointChangesJSON",
-            "path" : "",
-            "params" : {
-              "PointsArray" : "{{event.value}}",
-              "SubscriptionId" : "{{event.metadata.PipelineName}}"
-            },
-            "connectionName" : "PI"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.*.pointName[]"
         },
-        "outputs" : [ "SetAddToTop" ]
+        "outputs" : [ "SetArrayOfPoints" ]
+      }, {
+        "name" : "SetAddToTop",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : -142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.add"
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "SetRunMaxTime",
+        "display" : {
+          "position" : {
+            "x" : 5940,
+            "y" : 142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.metadata.CurrentTime);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
       }, {
         "name" : "SetKey",
         "display" : {
@@ -2542,6 +3209,34 @@
           "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "LookupForPoint" ]
+      }, {
+        "name" : "LookupForPoint",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".MergeReadConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "child",
+            "key" : "Lookup",
+            "reference" : {
+              "type" : "LookupMap",
+              "name" : "AssetsWithPointsLimit100Offset100",
+              "path" : "[\"{{event.value.Key}}\"]"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "ApplyModel" ]
       }, {
         "name" : "ApplyModel",
         "display" : {
@@ -2642,51 +3337,21 @@
         },
         "outputs" : [ "Return" ]
       }, {
-        "name" : "LookupForPoint",
+        "name" : "SetRunMaxTimeToLast",
         "display" : {
           "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
+            "x" : 6840,
+            "y" : -142
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".MergeReadConfig",
-          "failureOutputs" : [ ],
-          "keyReferences" : [ {
-            "location" : "child",
-            "key" : "Lookup",
-            "reference" : {
-              "type" : "LookupMap",
-              "name" : "AssetsWithPointsLimit100Offset100",
-              "path" : "[\"{{event.value.Key}}\"]"
-            }
-          } ],
-          "inputValueLocation" : "inline",
-          "inputValueKey" : "eventIn"
-        },
-        "outputs" : [ "ApplyModel" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 1500,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.value[event.value.length-1]);\r\nstage.setValue(event.value);"
         },
         "outputs" : [ ]
       } ],
-      "trackActivity" : false,
+      "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -2699,10 +3364,10 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
-            "duration" : 30,
-            "units" : "Seconds"
+            "duration" : 5,
+            "units" : "Minutes"
           },
           "mode" : "interval"
         }
@@ -2711,40 +3376,28 @@
         "type" : "default"
       }
     }, {
-      "name" : "ReadPointChangesParquetLimit100Offset0",
+      "name" : "ReadPointChangeParquetLimit100Offset0",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "SetPipelineName" ],
+      "inputStages" : [ "GetLastRunMaxTime" ],
       "stages" : [ {
-        "name" : "MQTT",
+        "name" : "SetPiplineName",
         "display" : {
           "position" : {
-            "x" : 5940,
+            "x" : 690,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.MQTT}}",
-          "eventPath" : "",
-          "connectionType" : "mqtt",
-          "qualifier" : {
-            "topic" : "{{event.metadata.PipelineName}}",
-            "qos" : 0,
-            "namedRoot" : false,
-            "retained" : true,
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "ignore"
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ ]
+        "outputs" : [ "SetFileName" ]
       }, {
         "name" : "PointChanges",
         "display" : {
           "position" : {
-            "x" : 2040,
+            "x" : 3390,
             "y" : 0
           }
         },
@@ -2762,87 +3415,55 @@
             },
             "connectionName" : "PI"
           },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "MissedPointChanges" ]
         },
         "outputs" : [ "WriteParquet" ]
       }, {
-        "name" : "SetFileName",
+        "name" : "SetArrayOfPoints",
         "display" : {
           "position" : {
-            "x" : 690,
+            "x" : 2490,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const fileName = \"../appData/\" + stage.pipelineName +\".parquet\"\r\nstage.setMetadata(\"FileName\", fileName);\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"ArrayOfPoints\", event.value);\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "LookupAssetWithPoints" ]
+        "outputs" : [ "SetCurrentTime" ]
       }, {
-        "name" : "Delay100ms",
+        "name" : "MQTT",
         "display" : {
           "position" : {
-            "x" : 2940,
-            "y" : 0
+            "x" : 7290,
+            "y" : -67
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".DelayConfig",
-          "delay" : {
-            "duration" : 100,
-            "units" : "Milliseconds"
-          }
-        },
-        "outputs" : [ "SelectParquetData" ]
-      }, {
-        "name" : "SetPipelineName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SetFileName" ]
-      }, {
-        "name" : "SelectParquetData",
-        "display" : {
-          "position" : {
-            "x" : 3390,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
+          "type" : ".DynamicWriteConfig",
           "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "PIPointSelectTransform",
-            "path" : "",
-            "params" : {
-              "FileName" : "{{event.metadata.FileName}}",
-              "Limit" : null,
-              "Offset" : null
-            },
-            "connectionName" : "DuckDB"
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "{{event.metadata.PipelineName}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
           },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
         },
-        "outputs" : [ "ForEach" ]
+        "outputs" : [ "SortTime" ]
       }, {
         "name" : "LookupAssetWithPoints",
         "display" : {
           "position" : {
-            "x" : 1140,
+            "x" : 1590,
             "y" : 0
           }
         },
@@ -2860,11 +3481,67 @@
         },
         "outputs" : [ "ArrayOfPointName" ]
       }, {
+        "name" : "Delay100ms",
+        "display" : {
+          "position" : {
+            "x" : 4290,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 100,
+            "units" : "Milliseconds"
+          }
+        },
+        "outputs" : [ "SelectTransformParquetData" ]
+      }, {
+        "name" : "GetLastRunMaxTime",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set initial last run time\r\nlet initialLastRunMaxTime = new Date('2026-10-01T00:00:00.000Z');\r\nlet runLastMaxTime = new Date(state.pipeline.get(\"RunMaxTime\", initialLastRunMaxTime));\r\nstage.setMetadata(\"LastRunMaxTime\", runLastMaxTime.toISOString());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetPiplineName" ]
+      }, {
+        "name" : "SelectTransformParquetData",
+        "display" : {
+          "position" : {
+            "x" : 4740,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PIPointSelectTransform",
+            "path" : "",
+            "params" : {
+              "FileName" : "{{event.metadata.FileName}}"
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
         "name" : "ForEach",
         "display" : {
           "position" : {
-            "x" : 3840,
-            "y" : -150
+            "x" : 5190,
+            "y" : -217
           },
           "size" : {
             "width" : 1950,
@@ -2884,25 +3561,124 @@
         },
         "outputs" : [ "MQTT" ]
       }, {
-        "name" : "ArrayOfPointName",
+        "name" : "SetCurrentTime",
         "display" : {
           "position" : {
-            "x" : 1590,
+            "x" : 2940,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.*.pointName[]"
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"CurrentTime\", new Date());\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "PointChanges" ]
+      }, {
+        "name" : "MissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "MissedPointChanges",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Id",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.id;"
+            }
+          }, {
+            "name" : "PipelineName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.PipelineName"
+            }
+          }, {
+            "name" : "ArrayOfPoints",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.ArrayOfPoints"
+            }
+          }, {
+            "name" : "LastRunMaxTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.LastRunMaxTime"
+            }
+          }, {
+            "name" : "CurrentSubscriptionTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.CurrentTime"
+            }
+          }, {
+            "name" : "BackfillEndTime",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WriteMissedPointChanges" ]
+      }, {
+        "name" : "SortTime",
+        "display" : {
+          "position" : {
+            "x" : 7740,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$sort(event.value[].time)"
+        },
+        "outputs" : [ "SetRunMaxTimeToLast" ]
+      }, {
+        "name" : "WriteMissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 4290,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.SQLite}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "MissedPointChanges",
+            "writeType" : "insert",
+            "whereColumn" : "",
+            "logAsJSON" : false,
+            "createOption" : "create_and_update",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "SetRunMaxTime" ]
       }, {
         "name" : "WriteParquet",
         "display" : {
           "position" : {
-            "x" : 2490,
-            "y" : 0
+            "x" : 3840,
+            "y" : -67
           }
         },
         "description" : "",
@@ -2922,10 +3698,52 @@
         },
         "outputs" : [ "Delay100ms" ]
       }, {
-        "name" : "ApplyModel",
+        "name" : "ArrayOfPointName",
         "display" : {
           "position" : {
-            "x" : 1050,
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.*.pointName[]"
+        },
+        "outputs" : [ "SetArrayOfPoints" ]
+      }, {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupAssetWithPoints" ]
+      }, {
+        "name" : "SetRunMaxTime",
+        "display" : {
+          "position" : {
+            "x" : 4740,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.metadata.CurrentTime);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1500,
             "y" : 150
           },
           "metadata" : {
@@ -2934,92 +3752,26 @@
         },
         "description" : "",
         "config" : {
-          "type" : ".ModelConfig",
-          "model" : "AssetAttributesAndPoints",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "assetId",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.assetId"
-            }
-          }, {
-            "name" : "assetPath",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.assetPath"
-            }
-          }, {
-            "name" : "attributeId",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.attributeId"
-            }
-          }, {
-            "name" : "attributeName",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.attributeName"
-            }
-          }, {
-            "name" : "attributeDescription",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.attributeDescription"
-            }
-          }, {
-            "name" : "attributeDataType",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.attributeDataType"
-            }
-          }, {
-            "name" : "attributeUnits",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.attributeUnits"
-            }
-          }, {
-            "name" : "pointID",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.pointID"
-            }
-          }, {
-            "name" : "pointName",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.pointName"
-            }
-          }, {
-            "name" : "source",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.source"
-            }
-          }, {
-            "name" : "time",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.time"
-            }
-          }, {
-            "name" : "value",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.valueNumber"
-            }
-          }, {
-            "name" : "quality",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.value.quality"
-            }
-          } ],
-          "expandArray" : false
+          "type" : ".ReturnConfig"
         },
-        "outputs" : [ "Return" ]
+        "outputs" : [ ]
+      }, {
+        "name" : "SetKey",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupForPoint" ]
       }, {
         "name" : "LookupForPoint",
         "display" : {
@@ -3049,6 +3801,508 @@
         },
         "outputs" : [ "ApplyModel" ]
       }, {
+        "name" : "ApplyModel",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "AssetAttributesAndPoints",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "assetId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.assetId"
+            }
+          }, {
+            "name" : "assetPath",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.assetPath"
+            }
+          }, {
+            "name" : "attributeId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeId"
+            }
+          }, {
+            "name" : "attributeName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeName"
+            }
+          }, {
+            "name" : "attributeDescription",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeDescription"
+            }
+          }, {
+            "name" : "attributeDataType",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeDataType"
+            }
+          }, {
+            "name" : "attributeUnits",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.attributeUnits"
+            }
+          }, {
+            "name" : "pointID",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.pointID"
+            }
+          }, {
+            "name" : "pointName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.pointName"
+            }
+          }, {
+            "name" : "source",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.Lookup.source"
+            }
+          }, {
+            "name" : "time",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.time"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.valueNumber"
+            }
+          }, {
+            "name" : "quality",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value.quality"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "SetRunMaxTimeToLast",
+        "display" : {
+          "position" : {
+            "x" : 8190,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.value[event.value.length-1]);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : false,
+          "interval" : {
+            "duration" : 5,
+            "units" : "Minutes"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "ReadPointChangeParquetLimit100Offset100",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "GetLastRunMaxTime" ],
+      "stages" : [ {
+        "name" : "SetPiplineName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetFileName" ]
+      }, {
+        "name" : "PointChanges",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PointChangesParquet",
+            "path" : "",
+            "params" : {
+              "PointsArray" : "{{event.value}}",
+              "SubscriptionId" : "{{event.metadata.PipelineName}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "MissedPointChanges" ]
+        },
+        "outputs" : [ "WriteParquet" ]
+      }, {
+        "name" : "SetArrayOfPoints",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"ArrayOfPoints\", event.value);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetCurrentTime" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 7290,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "{{event.metadata.PipelineName}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "SortTime" ]
+      }, {
+        "name" : "LookupAssetWithPoints",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "LookupMap",
+            "name" : "AssetsWithPointsLimit100Offset100",
+            "path" : ""
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ArrayOfPointName" ]
+      }, {
+        "name" : "Delay100ms",
+        "display" : {
+          "position" : {
+            "x" : 4290,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 100,
+            "units" : "Milliseconds"
+          }
+        },
+        "outputs" : [ "SelectTransformParquetData" ]
+      }, {
+        "name" : "GetLastRunMaxTime",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set initial last run time\r\nlet initialLastRunMaxTime = new Date('2026-10-01T00:00:00.000Z');\r\nlet runLastMaxTime = new Date(state.pipeline.get(\"RunMaxTime\", initialLastRunMaxTime));\r\nstage.setMetadata(\"LastRunMaxTime\", runLastMaxTime.toISOString());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetPiplineName" ]
+      }, {
+        "name" : "SelectTransformParquetData",
+        "display" : {
+          "position" : {
+            "x" : 4740,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PIPointSelectTransform",
+            "path" : "",
+            "params" : {
+              "FileName" : "{{event.metadata.FileName}}"
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 5190,
+            "y" : -217
+          },
+          "size" : {
+            "width" : 1950,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SetKey" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "SetCurrentTime",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"CurrentTime\", new Date());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "PointChanges" ]
+      }, {
+        "name" : "MissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "MissedPointChanges",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Id",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.id;"
+            }
+          }, {
+            "name" : "PipelineName",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.PipelineName"
+            }
+          }, {
+            "name" : "ArrayOfPoints",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.ArrayOfPoints"
+            }
+          }, {
+            "name" : "LastRunMaxTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.LastRunMaxTime"
+            }
+          }, {
+            "name" : "CurrentSubscriptionTime",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.metadata.CurrentTime"
+            }
+          }, {
+            "name" : "BackfillEndTime",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "WriteMissedPointChanges" ]
+      }, {
+        "name" : "SortTime",
+        "display" : {
+          "position" : {
+            "x" : 7740,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$sort(event.value[].time)"
+        },
+        "outputs" : [ "SetRunMaxTimeToLast" ]
+      }, {
+        "name" : "WriteMissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 4290,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.SQLite}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "MissedPointChanges",
+            "writeType" : "insert",
+            "whereColumn" : "",
+            "logAsJSON" : false,
+            "createOption" : "create_and_update",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "SetRunMaxTime" ]
+      }, {
+        "name" : "WriteParquet",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.File}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Delay100ms" ]
+      }, {
+        "name" : "ArrayOfPointName",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value.*.pointName[]"
+        },
+        "outputs" : [ "SetArrayOfPoints" ]
+      }, {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LookupAssetWithPoints" ]
+      }, {
+        "name" : "SetRunMaxTime",
+        "display" : {
+          "position" : {
+            "x" : 4740,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.metadata.CurrentTime);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ ]
+      }, {
         "name" : "Return",
         "display" : {
           "position" : {
@@ -3081,242 +4335,34 @@
           "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "LookupForPoint" ]
-      } ],
-      "trackActivity" : false,
-      "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "PolledTrigger",
+      }, {
+        "name" : "LookupForPoint",
         "display" : {
           "position" : {
-            "x" : -450,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerPolled",
-          "enabled" : true,
-          "interval" : {
-            "duration" : 30,
-            "units" : "Seconds"
+            "x" : 600,
+            "y" : 150
           },
-          "mode" : "interval"
-        }
-      } ],
-      "errorHandler" : {
-        "type" : "default"
-      }
-    }, {
-      "name" : "ReadPointChangesParquetLimit100Offset100",
-      "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "SetPipelineName" ],
-      "stages" : [ {
-        "name" : "MQTT",
-        "display" : {
-          "position" : {
-            "x" : 5940,
-            "y" : 0
+          "metadata" : {
+            "parent" : "ForEach"
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".DynamicWriteConfig",
+          "type" : ".MergeReadConfig",
           "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.MQTT}}",
-          "eventPath" : "",
-          "connectionType" : "mqtt",
-          "qualifier" : {
-            "topic" : "{{event.metadata.PipelineName}}",
-            "qos" : 0,
-            "namedRoot" : false,
-            "retained" : true,
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "ignore"
+          "keyReferences" : [ {
+            "location" : "child",
+            "key" : "Lookup",
+            "reference" : {
+              "type" : "LookupMap",
+              "name" : "AssetsWithPointsLimit100Offset100",
+              "path" : "[\"{{event.value.Key}}\"]"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
         },
-        "outputs" : [ ]
-      }, {
-        "name" : "PointChanges",
-        "display" : {
-          "position" : {
-            "x" : 2040,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "PointChangesParquet",
-            "path" : "",
-            "params" : {
-              "PointsArray" : "{{event.value}}",
-              "SubscriptionId" : "{{event.metadata.PipelineName}}"
-            },
-            "connectionName" : "PI"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "WriteParquet" ]
-      }, {
-        "name" : "SetFileName",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const fileName = \"../appData/\" + stage.pipelineName +\".parquet\"\r\nstage.setMetadata(\"FileName\", fileName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "LookupAssetWithPoints" ]
-      }, {
-        "name" : "Delay100ms",
-        "display" : {
-          "position" : {
-            "x" : 2940,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DelayConfig",
-          "delay" : {
-            "duration" : 100,
-            "units" : "Milliseconds"
-          }
-        },
-        "outputs" : [ "SelectParquetData" ]
-      }, {
-        "name" : "SetPipelineName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SetFileName" ]
-      }, {
-        "name" : "SelectParquetData",
-        "display" : {
-          "position" : {
-            "x" : 3390,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "PIPointSelectTransform",
-            "path" : "",
-            "params" : {
-              "FileName" : "{{event.metadata.FileName}}",
-              "Limit" : null,
-              "Offset" : null
-            },
-            "connectionName" : "DuckDB"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "ForEach" ]
-      }, {
-        "name" : "LookupAssetWithPoints",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "LookupMap",
-            "name" : "AssetsWithPointsLimit100Offset100",
-            "path" : ""
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "ArrayOfPointName" ]
-      }, {
-        "name" : "ForEach",
-        "display" : {
-          "position" : {
-            "x" : 3840,
-            "y" : -150
-          },
-          "size" : {
-            "width" : 1950,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SetKey" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "MQTT" ]
-      }, {
-        "name" : "ArrayOfPointName",
-        "display" : {
-          "position" : {
-            "x" : 1590,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.*.pointName[]"
-        },
-        "outputs" : [ "PointChanges" ]
-      }, {
-        "name" : "WriteParquet",
-        "display" : {
-          "position" : {
-            "x" : 2490,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.File}}",
-          "eventPath" : "",
-          "connectionType" : "file",
-          "qualifier" : {
-            "type" : "write",
-            "fileName" : "{{event.metadata.FileName}}",
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "Delay100ms" ]
+        "outputs" : [ "ApplyModel" ]
       }, {
         "name" : "ApplyModel",
         "display" : {
@@ -3417,68 +4463,21 @@
         },
         "outputs" : [ "Return" ]
       }, {
-        "name" : "LookupForPoint",
+        "name" : "SetRunMaxTimeToLast",
         "display" : {
           "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".MergeReadConfig",
-          "failureOutputs" : [ ],
-          "keyReferences" : [ {
-            "location" : "child",
-            "key" : "Lookup",
-            "reference" : {
-              "type" : "LookupMap",
-              "name" : "AssetsWithPointsLimit100Offset100",
-              "path" : "[\"{{event.value.Key}}\"]"
-            }
-          } ],
-          "inputValueLocation" : "inline",
-          "inputValueKey" : "eventIn"
-        },
-        "outputs" : [ "ApplyModel" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 1500,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "SetKey",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
+            "x" : 8190,
+            "y" : -67
           }
         },
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.value[event.value.length-1]);\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "LookupForPoint" ]
+        "outputs" : [ ]
       } ],
-      "trackActivity" : false,
+      "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -3491,10 +4490,10 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
-            "duration" : 30,
-            "units" : "Seconds"
+            "duration" : 5,
+            "units" : "Minutes"
           },
           "mode" : "interval"
         }
