@@ -43,6 +43,37 @@
         "database" : ""
       }
     }, {
+      "name" : "File",
+      "uri" : "file://TestFileConnection",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "communicationProtocol" : {
+          "type" : "FILE_PROTOCOL",
+          "options" : { }
+        },
+        "directory" : "\\"
+      }
+    }, {
       "name" : "MQTT",
       "uri" : "mqtt://localhost:1885",
       "description" : "This is a Connection to the Intelligence Hub MQTT broker created for the purpose of viewing Pipeline outputs.",
@@ -1353,25 +1384,7 @@
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "PolledTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : 0
-          }
-        },
-        "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
-        "config" : {
-          "type" : ".TriggerPolled",
-          "enabled" : false,
-          "interval" : {
-            "duration" : 8,
-            "units" : "Hours"
-          },
-          "mode" : "interval"
-        }
-      } ],
+      "triggers" : [ ],
       "errorHandler" : {
         "type" : "default"
       }
@@ -2032,7 +2045,6 @@
     }, {
       "name" : "ReadHistoricalBackfillValueFromMissedPointChanges",
       "description" : "This Pipeline executes many times to index through a time period of historical PI Point value changes.  The Pipeline obtains data from PI Data Archive and models the data before formatting it into an array.  The modeled data would typically be written to a file for a data lake or written directly to a data warehouse table.  The dates for the time period and the index interval time are stored in JavaScript Stages that must be edited.  A date is also stored as a State Variable that must be deleted to reset the Pipeline.  The solution relies on a Parquet file that is stored locally.",
-      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
@@ -2208,8 +2220,8 @@
             "path" : "",
             "params" : {
               "PointsArray" : "{{event.metadata.MissedPointChanges.ArrayOfPoints}}",
-              "StartTime" : null,
-              "EndTime" : null
+              "StartTime" : "{{event.metadata.StartTime}}",
+              "EndTime" : "{{event.metadata.EndTime}}"
             },
             "connectionName" : "PI"
           },
@@ -2344,7 +2356,7 @@
         "config" : {
           "type" : ".DynamicWriteConfig",
           "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.file}}",
+          "connectionReference" : "{{Connection.File}}",
           "eventPath" : "",
           "connectionType" : "file",
           "qualifier" : {
@@ -2357,7 +2369,7 @@
         },
         "outputs" : [ "One00ms" ]
       } ],
-      "trackActivity" : true,
+      "trackActivity" : false,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -2370,7 +2382,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 30,
             "units" : "Seconds"
@@ -2854,7 +2866,7 @@
         },
         "outputs" : [ ]
       } ],
-      "trackActivity" : true,
+      "trackActivity" : false,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -2869,8 +2881,8 @@
           "type" : ".TriggerPolled",
           "enabled" : true,
           "interval" : {
-            "duration" : 5,
-            "units" : "Minutes"
+            "duration" : 30,
+            "units" : "Seconds"
           },
           "mode" : "interval"
         }
@@ -3351,7 +3363,7 @@
         },
         "outputs" : [ ]
       } ],
-      "trackActivity" : true,
+      "trackActivity" : false,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -3364,10 +3376,10 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
-            "duration" : 5,
-            "units" : "Minutes"
+            "duration" : 30,
+            "units" : "Seconds"
           },
           "mode" : "interval"
         }
@@ -3914,7 +3926,7 @@
         },
         "outputs" : [ ]
       } ],
-      "trackActivity" : true,
+      "trackActivity" : false,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -3927,10 +3939,10 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
-            "duration" : 5,
-            "units" : "Minutes"
+            "duration" : 30,
+            "units" : "Seconds"
           },
           "mode" : "interval"
         }
@@ -4477,7 +4489,7 @@
         },
         "outputs" : [ ]
       } ],
-      "trackActivity" : true,
+      "trackActivity" : false,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "PolledTrigger",
@@ -4490,10 +4502,10 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
-            "duration" : 5,
-            "units" : "Minutes"
+            "duration" : 30,
+            "units" : "Seconds"
           },
           "mode" : "interval"
         }
