@@ -2048,6 +2048,20 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "This JavaScript Stage establishes the name of the file that the Pipeline writes to.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "MissedPointChanges" ]
+      }, {
         "name" : "MissedPointChangesToMetadata",
         "display" : {
           "position" : {
@@ -2082,19 +2096,30 @@
         },
         "outputs" : [ "SetFileName" ]
       }, {
-        "name" : "SetFileName",
+        "name" : "DeleteFromMissedPointChanges",
         "display" : {
           "position" : {
-            "x" : 690,
+            "x" : 6390,
             "y" : 0
           }
         },
-        "description" : "This JavaScript Stage establishes the name of the file that the Pipeline writes to.",
+        "description" : "",
         "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "DeleteFromMissedPointChangesBy_Id",
+            "path" : "",
+            "params" : {
+              "Id" : "{{event.metadata.MissedPointChanges._id}}"
+            },
+            "connectionName" : "SQLite"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
         },
-        "outputs" : [ "MissedPointChanges" ]
+        "outputs" : [ ]
       }, {
         "name" : "MissedPointChanges",
         "display" : {
@@ -2119,6 +2144,20 @@
         },
         "outputs" : [ "MissedPointChangesToMetadata" ]
       }, {
+        "name" : "SetIntervalMilliseconds",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const intervalSeconds = 60;\r\nconst intervalMilliseconds = intervalSeconds * 1000;\r\nstage.setMetadata(\"IntervalMilliseconds\", intervalMilliseconds);\r\n\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "while" ]
+      }, {
         "name" : "while",
         "display" : {
           "position" : {
@@ -2126,7 +2165,7 @@
             "y" : -150
           },
           "size" : {
-            "width" : 4200,
+            "width" : 3750,
             "height" : 390
           },
           "metadata" : { }
@@ -2145,113 +2184,10 @@
         },
         "outputs" : [ "DeleteFromMissedPointChanges" ]
       }, {
-        "name" : "DeleteFromMissedPointChanges",
-        "display" : {
-          "position" : {
-            "x" : 6840,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "DeleteFromMissedPointChangesBy_Id",
-            "path" : "",
-            "params" : {
-              "Id" : "{{event.metadata.MissedPointChanges._id}}"
-            },
-            "connectionName" : "SQLite"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "SetIntervalMilliseconds",
-        "display" : {
-          "position" : {
-            "x" : 2040,
-            "y" : 0
-          }
-        },
-        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const intervalSeconds = 60;\r\nconst intervalMilliseconds = intervalSeconds * 1000;\r\nstage.setMetadata(\"IntervalMilliseconds\", intervalMilliseconds);\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "while" ]
-      }, {
-        "name" : "SetEndTime",
-        "display" : {
-          "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "while"
-          }
-        },
-        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "let endTime = new Date(event.metadata.MissedPointChanges.LastRunMaxTime);\r\nendTime = endTime.getTime() + (event.metadata.IntervalMilliseconds * (event.metadata.loopIndex + 1));\r\nif (new Date(endTime) > event.metadata.MissedPointChanges.CurrentSubscriptionTime)\r\n{\r\n    endTime = event.metadata.MissedPointChanges.CurrentSubscriptionTime;\r\n}\r\nstage.setMetadata(\"EndTime\", new Date(endTime).toISOString());\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "PointsParquet" ]
-      }, {
-        "name" : "One00ms",
-        "display" : {
-          "position" : {
-            "x" : 1950,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "while"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DelayConfig",
-          "delay" : {
-            "duration" : 100,
-            "units" : "Milliseconds"
-          }
-        },
-        "outputs" : [ "ReadParquet" ]
-      }, {
-        "name" : "WriteFile",
-        "display" : {
-          "position" : {
-            "x" : 1500,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "while"
-          }
-        },
-        "description" : "This Stage writes the payload to a local parquet file. ",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.File}}",
-          "eventPath" : "",
-          "connectionType" : "file",
-          "qualifier" : {
-            "type" : "write",
-            "fileName" : "{{event.metadata.FileName}}",
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "One00ms" ]
-      }, {
         "name" : "Return",
         "display" : {
           "position" : {
-            "x" : 3750,
+            "x" : 3300,
             "y" : 150
           },
           "metadata" : {
@@ -2367,12 +2303,12 @@
           "qualifierExpression" : "",
           "writeReturn" : "completion"
         },
-        "outputs" : [ "One00ms_1" ]
+        "outputs" : [ "Return" ]
       }, {
-        "name" : "One00ms_1",
+        "name" : "OneSecond",
         "display" : {
           "position" : {
-            "x" : 3300,
+            "x" : 1950,
             "y" : 150
           },
           "metadata" : {
@@ -2383,11 +2319,55 @@
         "config" : {
           "type" : ".DelayConfig",
           "delay" : {
-            "duration" : 100,
-            "units" : "Milliseconds"
+            "duration" : 1,
+            "units" : "Seconds"
           }
         },
-        "outputs" : [ "Return" ]
+        "outputs" : [ "ReadParquet" ]
+      }, {
+        "name" : "SetEndTime",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "let endTime = new Date(event.metadata.MissedPointChanges.LastRunMaxTime);\r\nendTime = endTime.getTime() + (event.metadata.IntervalMilliseconds * (event.metadata.loopIndex + 1));\r\nif (new Date(endTime) > event.metadata.MissedPointChanges.CurrentSubscriptionTime)\r\n{\r\n    endTime = event.metadata.MissedPointChanges.CurrentSubscriptionTime;\r\n}\r\nstage.setMetadata(\"EndTime\", new Date(endTime).toISOString());\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "PointsParquet" ]
+      }, {
+        "name" : "WriteFile",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "This Stage writes the payload to a local parquet file. ",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.File}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "OneSecond" ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
@@ -4593,7 +4573,22 @@
   },
   "network" : {
     "version" : 0,
-    "groups" : [ ],
+    "groups" : [ {
+      "name" : "TEst",
+      "token" : "5NxhJXaoyEKSrw6v8BQftDlfjxygCkiw"
+    } ],
     "hubs" : [ ]
+  },
+  "remoteConfig" : {
+    "remoteUrl" : "",
+    "token" : "",
+    "clientId" : "f2eba9c2-c76e-4a35-a630-792551bbb071",
+    "name" : "",
+    "features" : {
+      "centralConfig" : true,
+      "centralData" : false
+    },
+    "requestTimeoutSeconds" : 5,
+    "heartbeatIntervalSeconds" : 10
   }
 }
