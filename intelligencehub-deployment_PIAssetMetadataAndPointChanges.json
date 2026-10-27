@@ -2032,7 +2032,7 @@
     }, {
       "name" : "ReadHistoricalBackfillValueFromMissedPointChanges",
       "description" : "This Pipeline executes many times to index through a time period of historical PI Point value changes.  The Pipeline obtains data from PI Data Archive and models the data before formatting it into an array.  The modeled data would typically be written to a file for a data lake or written directly to a data warehouse table.  The dates for the time period and the index interval time are stored in JavaScript Stages that must be edited.  A date is also stored as a State Variable that must be deleted to reset the Pipeline.  The solution relies on a Parquet file that is stored locally.",
-      "groupAs" : "/starter_hist_read_event",
+      "groupAs" : "",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
