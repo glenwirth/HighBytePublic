@@ -37,7 +37,7 @@
         "strategy" : {
           "type" : "default"
         },
-        "connectString" : "jdbc:duckdb:;memory_limit=4GB",
+        "connectString" : "jdbc:duckdb:../appData/duckdb.db;memory_limit=4GB",
         "classPath" : "org.duckdb.DuckDBDriver",
         "sqlSyntax" : "postgresql",
         "database" : ""
@@ -194,11 +194,109 @@
     } ],
     "conditions" : [ ],
     "inputs" : [ {
+      "name" : "AssetMetadataWithPoints",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "SELECT  * from AssetMetadata where pointName is not null order by _id limit {{this.Limit}} offset {{this.Offset}}"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Limit",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : 100,
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Offset",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : 0,
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "CreateAssetMetadata",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "CREATE SEQUENCE IF NOT EXISTS assetmetadata_id_seq START 1;\n\nCREATE TABLE AssetMetadata (\n    _id                  BIGINT PRIMARY KEY DEFAULT nextval('assetmetadata_id_seq'),\n    assetId              VARCHAR,\n    assetPath            VARCHAR,\n    attributeId          VARCHAR,\n    attributeName        VARCHAR,\n    attributeDescription VARCHAR,\n    attributeDataType    VARCHAR,\n    source               VARCHAR,\n    \"time\"               TIMESTAMP,\n    _timestamp           BIGINT,\n    _name                VARCHAR,\n    attributeUnits       VARCHAR,\n    pointID              VARCHAR,\n    pointName            VARCHAR,\n    _model               VARCHAR\n);"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
       "name" : "PIPointSelectTransform",
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
         "query" : "SELECT\n    name AS \"pointName\",\n    COALESCE(value_double, value_int64) AS \"valueNumber\",\n    CASE\n        WHEN value_double IS NULL AND value_int64 IS NULL\n        THEN COALESCE(value_string, CAST(value_boolean AS VARCHAR))\n    END AS \"valueOther\",\n    quality,\n    time\nFROM read_parquet('{{this.FileName}}')",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "FileName",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "..//appData//pi.parquet",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "PIPointSelectTransformWithAssetMetadata",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "SELECT\n    rp.name AS \"pointName\",\n    COALESCE(rp.value_double, rp.value_int64) AS \"valueNumber\",\n    CASE\n        WHEN rp.value_double IS NULL AND rp.value_int64 IS NULL\n        THEN COALESCE(rp.value_string, CAST(rp.value_boolean AS VARCHAR))\n    END AS \"valueOther\",\n    rp.quality,\n    rp.time,\n    am.*\nFROM AssetMetadata  am \nJOIN read_parquet('{{this.FileName}}') rp \n  ON am.pointName = rp.name",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -3734,7 +3832,7 @@
         },
         "expirationInterval" : {
           "duration" : 1,
-          "units" : "Hours"
+          "units" : "Minutes"
         }
       }
     }, {
@@ -3754,7 +3852,7 @@
         },
         "expirationInterval" : {
           "duration" : 1,
-          "units" : "Hours"
+          "units" : "Minutes"
         }
       }
     } ],
