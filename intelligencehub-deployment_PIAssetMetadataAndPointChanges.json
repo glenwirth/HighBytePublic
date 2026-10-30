@@ -1595,8 +1595,8 @@
         "name" : "ForEachAttribute",
         "display" : {
           "position" : {
-            "x" : 2940,
-            "y" : -270
+            "x" : 2926,
+            "y" : -531
           },
           "size" : {
             "width" : 1500,
@@ -1668,8 +1668,8 @@
         "name" : "SetAttributesToSingleObject",
         "display" : {
           "position" : {
-            "x" : 4590,
-            "y" : 0
+            "x" : 4564,
+            "y" : 284
           }
         },
         "description" : "",
@@ -1695,7 +1695,7 @@
             "description" : "Value Is True"
           }, {
             "expression" : "return true",
-            "outputs" : [ ],
+            "outputs" : [ "Return" ],
             "description" : "Default"
           } ]
         },
