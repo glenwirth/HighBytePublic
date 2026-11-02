@@ -3020,7 +3020,7 @@
         "description" : "",
         "config" : {
           "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value.*.pointName[]"
+          "transformExpression" : "event.value[].pointName"
         },
         "outputs" : [ "SetArrayOfPoints" ]
       }, {
@@ -3085,13 +3085,13 @@
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "LookupAssetWithPoints" ]
+        "outputs" : [ "AssetMetadataWithPoints" ]
       }, {
-        "name" : "LookupAssetWithPoints",
+        "name" : "AssetMetadataWithPoints",
         "display" : {
           "position" : {
-            "x" : 1590,
-            "y" : 0
+            "x" : 1589,
+            "y" : -1
           }
         },
         "description" : "",
@@ -3099,9 +3099,14 @@
           "type" : ".ReadConfig",
           "failureOutputs" : [ ],
           "reference" : {
-            "type" : "LookupMap",
-            "name" : "AssetsWithPointsLimit100Offset0",
-            "path" : ""
+            "type" : "Input",
+            "name" : "AssetMetadataWithPoints",
+            "path" : "",
+            "params" : {
+              "Limit" : null,
+              "Offset" : null
+            },
+            "connectionName" : "SQLite"
           },
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
