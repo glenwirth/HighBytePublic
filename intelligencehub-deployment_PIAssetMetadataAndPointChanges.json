@@ -1223,7 +1223,7 @@
             "units" : "Seconds"
           }
         },
-        "outputs" : [ "Read" ]
+        "outputs" : [ "UpsertAssetMetadata" ]
       }, {
         "name" : "WriteParquet",
         "display" : {
@@ -1325,7 +1325,7 @@
         },
         "outputs" : [ ]
       }, {
-        "name" : "Read",
+        "name" : "UpsertAssetMetadata",
         "display" : {
           "position" : {
             "x" : 6390,
