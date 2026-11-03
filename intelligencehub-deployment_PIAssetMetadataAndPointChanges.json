@@ -161,36 +161,6 @@
           }
         }
       }
-    }, {
-      "name" : "SQLite",
-      "uri" : "jdbc.sqlite://sqlite",
-      "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "writes" : {
-        "flattenModeledValues" : false
-      },
-      "writeThrottle" : {
-        "enabled" : false,
-        "maxBatchSizePerTarget" : 1000,
-        "batchDelay" : {
-          "duration" : 20,
-          "units" : "Milliseconds"
-        }
-      },
-      "subscriptions" : { },
-      "storeForward" : {
-        "enabled" : false,
-        "maxEntries" : 100,
-        "waitOnFailureInterval" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "settings" : {
-        "strategy" : {
-          "type" : "default"
-        },
-        "database" : "../appData/PI.db"
-      }
     } ],
     "conditions" : [ ],
     "inputs" : [ {
@@ -198,7 +168,12 @@
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "SELECT  * from AssetMetadata where pointName is not null order by _id limit {{this.Limit}} offset {{this.Offset}}"
+        "query" : "SELECT  * from AssetMetadata where PointID >= 0 order by PointID limit {{this.Limit}} offset {{this.Offset}}",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
       },
       "cacheLifetime" : {
         "enabled" : false
@@ -241,7 +216,12 @@
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "CREATE SEQUENCE IF NOT EXISTS assetmetadata_id_seq START 1;\n\nCREATE TABLE AssetMetadata (\n    _id                  BIGINT PRIMARY KEY DEFAULT nextval('assetmetadata_id_seq'),\n    assetId              VARCHAR,\n    assetPath            VARCHAR,\n    attributeId          VARCHAR,\n    attributeName        VARCHAR,\n    attributeDescription VARCHAR,\n    attributeDataType    VARCHAR,\n    source               VARCHAR,\n    \"time\"               TIMESTAMP,\n    _timestamp           BIGINT,\n    _name                VARCHAR,\n    attributeUnits       VARCHAR,\n    pointID              VARCHAR,\n    pointName            VARCHAR,\n    _model               VARCHAR\n);"
+        "query" : "CREATE SEQUENCE IF NOT EXISTS asset_metadata_id_seq START 1;\n\nCREATE TABLE IF NOT EXISTS AssetMetadata (\n    id                   BIGINT      NOT NULL DEFAULT nextval('asset_metadata_id_seq'),\n    assetId              VARCHAR     NOT NULL,\n    assetPath            VARCHAR,\n    attributeId          VARCHAR     NOT NULL,\n    attributeName        VARCHAR,\n    attributeDescription VARCHAR,\n    attributeDataType    VARCHAR,\n    attributeUnits       VARCHAR,\n    pointId              INTEGER,\n    pointName            VARCHAR,\n    source               VARCHAR,\n    time                 TIMESTAMPTZ,\n    PRIMARY KEY (assetId, attributeId)\n);",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
       },
       "cacheLifetime" : {
         "enabled" : false
@@ -252,6 +232,150 @@
       "referenceMap" : [ ],
       "parameters" : {
         "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "CreateMissedPointChanges",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "CREATE SEQUENCE IF NOT EXISTS missedpointchanges_id_seq START 1;\n\nCREATE TABLE IF NOT EXISTS  MissedPointChanges (\n    _id                     BIGINT PRIMARY KEY DEFAULT nextval('missedpointchanges_id_seq'),\n    \"_model\"                VARCHAR,\n    \"_timestamp\"            BIGINT,\n    \"PipelineName\"          VARCHAR,\n    \"LastRunMaxTime\"        TIMESTAMP,\n    \"CurrentSubscriptionTime\" TIMESTAMP,\n    \"_name\"                 VARCHAR,\n    \"ArrayOfPoints\"         VARCHAR,\n    \"Id\"                    VARCHAR\n);",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "DeleteFromMissedPointChanges",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "Delete FROM MissedPointChanges;"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "DeleteFromMissedPointChangesBy_Id",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "Delete from MissedPointChanges where _id = {{this.Id}}"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Id",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : -1,
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "DropAssetMetadata",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "DROP TABLE AssetMetadata",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "MissedPointChanges",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "Select * from MissedPointChanges order by _id"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "MissedPointChangesByPipelineLimit1",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "Select * from MissedPointChanges where PipelineName = '{{this.PipelineName}}' order by _id limit 1"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "PipelineName",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
       }
     }, {
       "name" : "PIPointSelectTransform",
@@ -322,6 +446,82 @@
             "required" : false,
             "array" : false,
             "defaultValue" : "..//appData//pi.parquet",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "ParquetFileContents",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "SELECT *\nFROM read_parquet('{{this.FileName}}')",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "FileName",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "..//appData//MetadataAssetAttributesToSQLiteSubpipeline.parquet",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "UpsertAssetMetadata",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "-- Upsert from Parquet\nINSERT INTO AssetMetadata\nSELECT nextval('asset_metadata_id_seq'), assetId, assetPath, attributeId, attributeName, attributeDescription,\n       attributeDataType, attributeUnits, pointId, pointName,\n       source, CAST(time AS TIMESTAMPTZ)\nFROM read_parquet('{{this.FileName}}')\nQUALIFY row_number() OVER (PARTITION BY assetId, attributeId) = 1   -- dedupe source\nON CONFLICT (assetId, attributeId) DO UPDATE SET\n    assetPath            = EXCLUDED.assetPath,\n    attributeName        = EXCLUDED.attributeName,\n    attributeDescription = EXCLUDED.attributeDescription,\n    attributeDataType    = EXCLUDED.attributeDataType,\n    attributeUnits       = EXCLUDED.attributeUnits,\n    pointId              = EXCLUDED.pointID,\n    pointName            = EXCLUDED.pointName,\n    source               = EXCLUDED.source,\n    time                 = EXCLUDED.time",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "FileName",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "..//appData//MetadataAssetAttributesToSQLiteSubpipeline.parquet",
             "internalType" : {
               "variant" : "String"
             }
@@ -646,183 +846,6 @@
           "modelVersion" : ""
         }
       }
-    }, {
-      "name" : "AssetMetadataTableExists",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "SELECT name FROM sqlite_master\nWHERE type = 'table' AND name = 'AssetMetadata';"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "AssetMetadataWithPoints",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "SELECT  * from AssetMetadata where pointName is not null order by _id limit {{this.Limit}} offset {{this.Offset}}"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "Limit",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 100,
-            "internalType" : {
-              "variant" : "String"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "Offset",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 0,
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
-    }, {
-      "name" : "DeleteFromAssetMetadata",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Delete FROM AssetMetadata;"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "DeleteFromMissedPointChanges",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Delete FROM MissedPointChanges;"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "DeleteFromMissedPointChangesBy_Id",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Delete from MissedPointChanges where _id = {{this.Id}}"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "Id",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : -1,
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
-    }, {
-      "name" : "MissedPointChanges",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Select * from MissedPointChanges order by _id"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "MissedPointChangesByPipelineLimit1",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Select * from MissedPointChanges where PipelineName = '{{this.PipelineName}}' order by _id limit 1"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "PipelineName",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : "",
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
     } ],
     "outputs" : [ ],
     "modeling" : {
@@ -890,17 +913,19 @@
           "nullable" : true,
           "required" : false,
           "array" : false,
+          "defaultValue" : "NONE",
           "internalType" : {
             "variant" : "String"
           }
         }, {
           "attributeType" : "Internal",
-          "name" : "pointID",
+          "name" : "pointId",
           "nullable" : false,
           "required" : false,
           "array" : false,
+          "defaultValue" : -1,
           "internalType" : {
-            "variant" : "String"
+            "variant" : "Int64"
           }
         }, {
           "attributeType" : "Internal",
@@ -908,6 +933,7 @@
           "nullable" : false,
           "required" : false,
           "array" : false,
+          "defaultValue" : "NONE",
           "internalType" : {
             "variant" : "String"
           }
@@ -1129,7 +1155,7 @@
         "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 8,
             "units" : "Hours"
@@ -1144,126 +1170,26 @@
       "name" : "MetadataAssetAttributesToSQLiteSubpipeline",
       "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to sqlite;",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "AssetMetadata" ],
+      "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
-        "name" : "asset_attributes_no_parent",
+        "name" : "SetFileName",
         "display" : {
           "position" : {
-            "x" : 1140,
-            "y" : 67
-          }
-        },
-        "description" : "This Stage reads the data from AVEVA PI System.",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "MetadataAssetAttributes",
-            "path" : "",
-            "params" : {
-              "Database" : "{{event.metadata.Database}}",
-              "Name" : "{{event.value._name}}",
-              "Parent" : null
-            },
-            "connectionName" : "PI"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "HasAttributes" ]
-      }, {
-        "name" : "HasAttributes",
-        "display" : {
-          "position" : {
-            "x" : 1590,
+            "x" : 690,
             "y" : 0
           }
         },
         "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.value[0].hasOwnProperty('attributes'))",
-            "outputs" : [ "GetAttributes" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "SetAttributesToSingleObject" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "AssetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "The Stage moves the asset information to metadata.",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "HasParent" ]
-      }, {
-        "name" : "GetAttributes",
-        "display" : {
-          "position" : {
-            "x" : 2040,
-            "y" : -120
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value[0].attributes"
-        },
-        "outputs" : [ "ArrayLengthGT0" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 5040,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ForEachAttribute",
-        "display" : {
-          "position" : {
-            "x" : 2926,
-            "y" : -531
-          },
-          "size" : {
-            "width" : 1500,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "ApplyModel" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "SetAttributesToSingleObject" ]
+        "outputs" : [ "AssetMetadata" ]
       }, {
         "name" : "HasParent",
         "display" : {
           "position" : {
-            "x" : 690,
+            "x" : 1590,
             "y" : 0
           }
         },
@@ -1282,10 +1208,64 @@
         },
         "outputs" : [ ]
       }, {
+        "name" : "Delay1Second",
+        "display" : {
+          "position" : {
+            "x" : 5940,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "Read" ]
+      }, {
+        "name" : "WriteParquet",
+        "display" : {
+          "position" : {
+            "x" : 5490,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.File}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Delay1Second" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 6840,
+            "y" : 75
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
         "name" : "asset_attributes_with_parent",
         "display" : {
           "position" : {
-            "x" : 1140,
+            "x" : 2040,
             "y" : -67
           }
         },
@@ -1309,25 +1289,25 @@
         },
         "outputs" : [ "HasAttributes" ]
       }, {
-        "name" : "SetAttributesToSingleObject",
+        "name" : "GetAttributes",
         "display" : {
           "position" : {
-            "x" : 4564,
-            "y" : 284
+            "x" : 2940,
+            "y" : -45
           }
         },
         "description" : "",
         "config" : {
           "type" : ".JSONataTransformConfig",
-          "transformExpression" : "{\r\n    \"attributes\": event.value\r\n}"
+          "transformExpression" : "event.value[0].attributes"
         },
-        "outputs" : [ "Return" ]
+        "outputs" : [ "ArrayLengthGT0" ]
       }, {
         "name" : "ArrayLengthGT0",
         "display" : {
           "position" : {
-            "x" : 2490,
-            "y" : -120
+            "x" : 3390,
+            "y" : -45
           }
         },
         "description" : "",
@@ -1340,6 +1320,160 @@
           }, {
             "expression" : "return true",
             "outputs" : [ "Return" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Read",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "UpsertAssetMetadata",
+            "path" : "",
+            "params" : {
+              "FileName" : "{{event.metadata.FileName}}"
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "Return" ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "asset_attributes_no_parent",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 67
+          }
+        },
+        "description" : "This Stage reads the data from AVEVA PI System.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MetadataAssetAttributes",
+            "path" : "",
+            "params" : {
+              "Database" : "{{event.metadata.Database}}",
+              "Name" : "{{event.value._name}}",
+              "Parent" : null
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "HasAttributes" ]
+      }, {
+        "name" : "AssetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "The Stage moves the asset information to metadata.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "HasParent" ]
+      }, {
+        "name" : "SetPiplineName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetFileName" ]
+      }, {
+        "name" : "ParquetFormat",
+        "display" : {
+          "position" : {
+            "x" : 5040,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ParquetFormatConfig",
+          "outgoingType" : "File"
+        },
+        "outputs" : [ "WriteParquet" ]
+      }, {
+        "name" : "ForEachAttribute",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : -315
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "ApplyModel" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "ParquetFormat" ]
+      }, {
+        "name" : "SetReturnToSingleObject",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : 165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n    \"return\": event.value\r\n}"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "HasAttributes",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.value[0].hasOwnProperty('attributes'))",
+            "outputs" : [ "GetAttributes" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "SetReturnToSingleObject" ],
             "description" : "Default"
           } ]
         },
@@ -1404,7 +1538,7 @@
               "stageReference" : "event.value.uom"
             }
           }, {
-            "name" : "pointID",
+            "name" : "pointId",
             "expression" : {
               "type" : "PipelineStageReference",
               "stageReference" : "event.value.point.ID"
@@ -1442,12 +1576,12 @@
           } ],
           "expandArray" : false
         },
-        "outputs" : [ "SQLite" ]
+        "outputs" : [ "ReturnAttribute" ]
       }, {
         "name" : "ReturnAttribute",
         "display" : {
           "position" : {
-            "x" : 1050,
+            "x" : 600,
             "y" : 150
           },
           "metadata" : {
@@ -1459,42 +1593,8 @@
           "type" : ".ReturnConfig"
         },
         "outputs" : [ ]
-      }, {
-        "name" : "SQLite",
-        "display" : {
-          "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEachAttribute"
-          }
-        },
-        "description" : "This Stage publishes the payload to the Intelligence Hub MQTT broker which is being used in this case to allow easy visualization of the output.",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.SQLite}}",
-          "eventPath" : "",
-          "connectionType" : "jdbc.sqlite",
-          "qualifier" : {
-            "table" : "AssetMetadata",
-            "writeType" : "upsert",
-            "whereColumn" : "assetId = '{{this.assetId}}'  AND attributeId = '{{this.attributeId}}'",
-            "logAsJSON" : false,
-            "createOption" : "create_and_update",
-            "tableCacheInterval" : {
-              "duration" : 1,
-              "units" : "Hours"
-            },
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "ReturnAttribute" ]
       } ],
-      "trackActivity" : false,
+      "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "CallableTrigger",
@@ -1635,11 +1735,11 @@
           "reference" : {
             "type" : "Input",
             "name" : "MissedPointChangesByPipelineLimit1",
-            "path" : "[0]",
+            "path" : "",
             "params" : {
               "PipelineName" : "ReadPointChangeParquetLimit100Offset0"
             },
-            "connectionName" : "SQLite"
+            "connectionName" : "DuckDB"
           },
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
@@ -1991,10 +2091,10 @@
               "stageReference" : "event.value.Lookup.pointID"
             }
           }, {
-            "name" : "pointID",
+            "name" : "pointId",
             "expression" : {
               "type" : "PipelineStageReference",
-              "stageReference" : "event.value.Lookup.assetId"
+              "stageReference" : "event.value.Lookup.pointID"
             }
           }, {
             "name" : "pointName",
@@ -2058,9 +2158,9 @@
     }, {
       "name" : "PopulateAssetsWithPointLookupMap",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "Read" ],
+      "inputStages" : [ "DuckDB" ],
       "stages" : [ {
-        "name" : "Read",
+        "name" : "DuckDB",
         "display" : {
           "position" : {
             "x" : 240,
@@ -2079,7 +2179,7 @@
               "Limit" : "{{event.value.Limit}}",
               "Offset" : "{{event.value.Offset}}"
             },
-            "connectionName" : "SQLite"
+            "connectionName" : "DuckDB"
           },
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
@@ -2585,20 +2685,19 @@
         "config" : {
           "type" : ".DynamicWriteConfig",
           "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.SQLite}}",
+          "connectionReference" : "{{Connection.DuckDB}}",
           "eventPath" : "",
-          "connectionType" : "jdbc.sqlite",
+          "connectionType" : "jdbc",
           "qualifier" : {
             "table" : "MissedPointChanges",
             "writeType" : "insert",
             "whereColumn" : "",
             "logAsJSON" : false,
-            "createOption" : "create_and_update",
+            "createOption" : "off",
             "tableCacheInterval" : {
               "duration" : 1,
               "units" : "Hours"
-            },
-            "breakupArrays" : false
+            }
           },
           "qualifierExpression" : "",
           "writeReturn" : "completion"
@@ -2692,7 +2791,7 @@
               "stageReference" : "event.value.Lookup.attributeUnits"
             }
           }, {
-            "name" : "pointID",
+            "name" : "pointId",
             "expression" : {
               "type" : "PipelineStageReference",
               "stageReference" : "event.value.Lookup.pointID"
@@ -3106,7 +3205,7 @@
               "Limit" : null,
               "Offset" : null
             },
-            "connectionName" : "SQLite"
+            "connectionName" : "DuckDB"
           },
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
@@ -3152,20 +3251,19 @@
         "config" : {
           "type" : ".DynamicWriteConfig",
           "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.SQLite}}",
+          "connectionReference" : "{{Connection.DuckDB}}",
           "eventPath" : "",
-          "connectionType" : "jdbc.sqlite",
+          "connectionType" : "jdbc",
           "qualifier" : {
             "table" : "MissedPointChanges",
             "writeType" : "insert",
             "whereColumn" : "",
             "logAsJSON" : false,
-            "createOption" : "create_and_update",
+            "createOption" : "off",
             "tableCacheInterval" : {
               "duration" : 1,
               "units" : "Hours"
-            },
-            "breakupArrays" : false
+            }
           },
           "qualifierExpression" : "",
           "writeReturn" : "completion"
@@ -3475,20 +3573,19 @@
         "config" : {
           "type" : ".DynamicWriteConfig",
           "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.SQLite}}",
+          "connectionReference" : "{{Connection.DuckDB}}",
           "eventPath" : "",
-          "connectionType" : "jdbc.sqlite",
+          "connectionType" : "jdbc",
           "qualifier" : {
             "table" : "MissedPointChanges",
             "writeType" : "insert",
             "whereColumn" : "",
             "logAsJSON" : false,
-            "createOption" : "create_and_update",
+            "createOption" : "off",
             "tableCacheInterval" : {
               "duration" : 1,
               "units" : "Hours"
-            },
-            "breakupArrays" : false
+            }
           },
           "qualifierExpression" : "",
           "writeReturn" : "completion"
@@ -3681,7 +3778,7 @@
               "stageReference" : "event.value.Lookup.attributeUnits"
             }
           }, {
-            "name" : "pointID",
+            "name" : "pointId",
             "expression" : {
               "type" : "PipelineStageReference",
               "stageReference" : "event.value.Lookup.pointID"
@@ -3782,7 +3879,7 @@
         },
         "expirationInterval" : {
           "duration" : 1,
-          "units" : "Minutes"
+          "units" : "Seconds"
         }
       }
     }, {
