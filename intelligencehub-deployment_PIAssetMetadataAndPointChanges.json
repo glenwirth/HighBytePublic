@@ -1088,7 +1088,7 @@
           "failureOutputs" : [ ],
           "loopOutputs" : [ "Subpipeline" ],
           "stageTimeout" : {
-            "duration" : 5,
+            "duration" : 30,
             "units" : "Minutes"
           }
         },
@@ -1104,7 +1104,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "GetAssetChildren" ]
       }, {
