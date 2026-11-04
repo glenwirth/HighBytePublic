@@ -161,36 +161,6 @@
           }
         }
       }
-    }, {
-      "name" : "SQLite",
-      "uri" : "jdbc.sqlite://sqlite",
-      "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "writes" : {
-        "flattenModeledValues" : false
-      },
-      "writeThrottle" : {
-        "enabled" : false,
-        "maxBatchSizePerTarget" : 1000,
-        "batchDelay" : {
-          "duration" : 20,
-          "units" : "Milliseconds"
-        }
-      },
-      "subscriptions" : { },
-      "storeForward" : {
-        "enabled" : false,
-        "maxEntries" : 100,
-        "waitOnFailureInterval" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "settings" : {
-        "strategy" : {
-          "type" : "default"
-        },
-        "database" : "../appData/PI.db"
-      }
     } ],
     "conditions" : [ ],
     "inputs" : [ {
@@ -986,226 +956,6 @@
           "modelVersion" : ""
         }
       }
-    }, {
-      "name" : "AssetMetadataOrderByIdWithLimitAndOffset",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "SELECT  * from AssetMetadata order by _id limit {{this.Limit}} offset {{this.Offset}}"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "Limit",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 100,
-            "internalType" : {
-              "variant" : "String"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "Offset",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 0,
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
-    }, {
-      "name" : "AssetMetadataTableExists",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "SELECT name FROM sqlite_master\nWHERE type = 'table' AND name = 'AssetMetadata';"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "AssetMetadataWithPoints",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "SELECT  * from AssetMetadata where pointName is not null order by _id limit {{this.Limit}} offset {{this.Offset}}"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "Limit",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 100,
-            "internalType" : {
-              "variant" : "String"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "Offset",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 0,
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
-    }, {
-      "name" : "DeleteFromAssetMetadata",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Delete FROM AssetMetadata;"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "DeleteFromMissedPointChanges",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Delete FROM MissedPointChanges;"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "DeleteFromMissedPointChangesBy_Id",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Delete from MissedPointChanges where _id = {{this.Id}}"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "Id",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : -1,
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
-    }, {
-      "name" : "MissedPointChanges",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Select * from MissedPointChanges order by _id"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "MissedPointChangesByPipelineLimit1",
-      "connection" : "SQLite",
-      "type" : "jdbc.sqlite",
-      "qualifier" : {
-        "query" : "Select * from MissedPointChanges where PipelineName = '{{this.PipelineName}}' order by _id limit 1"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "PipelineName",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : "",
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
     } ],
     "outputs" : [ ],
     "modeling" : {
@@ -1982,6 +1732,31 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
       "stages" : [ {
+        "name" : "DeleteFromMissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "DeleteFromMissedPointChangesBy_Id",
+            "path" : "",
+            "params" : {
+              "Id" : "{{event.metadata.MissedPointChanges._id}}"
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ ]
+      }, {
         "name" : "MissedPointChangesToMetadata",
         "display" : {
           "position" : {
@@ -2016,31 +1791,19 @@
         },
         "outputs" : [ "while" ]
       }, {
-        "name" : "while",
+        "name" : "SetPipelineName",
         "display" : {
           "position" : {
-            "x" : 2483,
-            "y" : -305
-          },
-          "size" : {
-            "width" : 5850,
-            "height" : 690
-          },
-          "metadata" : { }
+            "x" : 240,
+            "y" : 0
+          }
         },
-        "description" : "This loop processes each batch of PI Point value changes.  ",
+        "description" : "",
         "config" : {
-          "type" : ".WhileLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SetStartTime" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Minutes"
-          },
-          "expression" : "return new Date(loop.metadata.EndTime) < new Date(loop.metadata.MissedPointChanges.CurrentSubscriptionTime)",
-          "loopValue" : "LAST_RETURN"
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "DeleteFromMissedPointChanges" ]
+        "outputs" : [ "SetFileName" ]
       }, {
         "name" : "SetFileName",
         "display" : {
@@ -2055,31 +1818,6 @@
           "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "MissedPointChanges" ]
-      }, {
-        "name" : "DeleteFromMissedPointChanges",
-        "display" : {
-          "position" : {
-            "x" : 8490,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "DeleteFromMissedPointChangesBy_Id",
-            "path" : "",
-            "params" : {
-              "Id" : "{{event.metadata.MissedPointChanges._id}}"
-            },
-            "connectionName" : "SQLite"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ ]
       }, {
         "name" : "MissedPointChanges",
         "display" : {
@@ -2106,72 +1844,37 @@
         },
         "outputs" : [ "MissedPointChangesToMetadata" ]
       }, {
-        "name" : "SetPipelineName",
+        "name" : "while",
         "display" : {
           "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SetFileName" ]
-      }, {
-        "name" : "SetStartTime",
-        "display" : {
-          "position" : {
-            "x" : 149,
-            "y" : 296
+            "x" : 2490,
+            "y" : -150
           },
-          "metadata" : {
-            "parent" : "while"
-          }
-        },
-        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "let startTime = new Date(event.metadata.MissedPointChanges.LastRunMaxTime);\r\n// add one millisecond and IntervalMilliseconds * loopIndex\r\nstartTime = startTime.getTime() + 1 + (event.metadata.IntervalMilliseconds * event.metadata.loopIndex);\r\nstage.setMetadata(\"StartTime\", new Date(startTime));\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SetEndTime" ]
-      }, {
-        "name" : "MQTT",
-        "display" : {
-          "position" : {
-            "x" : 3858,
-            "y" : 316
+          "size" : {
+            "width" : 3750,
+            "height" : 390
           },
-          "metadata" : {
-            "parent" : "while"
-          }
+          "metadata" : { }
         },
-        "description" : "In this example value change arrays are being written to the Intelligence Hub MQTT broker for ease of visibility.  ",
+        "description" : "This loop processes each batch of PI Point value changes.  ",
         "config" : {
-          "type" : ".DynamicWriteConfig",
+          "type" : ".WhileLoopConfig",
           "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.MQTT}}",
-          "eventPath" : "",
-          "connectionType" : "mqtt",
-          "qualifier" : {
-            "topic" : "MissedFromReadPointChangeParquetLimit100Offset0",
-            "qos" : 0,
-            "namedRoot" : false,
-            "retained" : true,
-            "breakupArrays" : false,
-            "filterList" : [ "_name", "_model", "_timestamp" ]
+          "loopOutputs" : [ "SetStartTime" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Minutes"
           },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
+          "expression" : "return new Date(loop.metadata.EndTime) < new Date(loop.metadata.MissedPointChanges.CurrentSubscriptionTime)",
+          "loopValue" : "LAST_RETURN"
         },
-        "outputs" : [ "Return" ]
+        "outputs" : [ "DeleteFromMissedPointChanges" ]
       }, {
         "name" : "SetEndTime",
         "display" : {
           "position" : {
-            "x" : 598,
-            "y" : 300
+            "x" : 600,
+            "y" : 150
           },
           "metadata" : {
             "parent" : "while"
@@ -2184,58 +1887,28 @@
         },
         "outputs" : [ "PointsParquet" ]
       }, {
-        "name" : "OneSecond",
+        "name" : "SetStartTime",
         "display" : {
           "position" : {
-            "x" : 1950,
-            "y" : 300
+            "x" : 150,
+            "y" : 150
           },
           "metadata" : {
             "parent" : "while"
           }
         },
-        "description" : "",
+        "description" : "This JavaScript Stage is used to set the time interval for each index and to calculate the end time for the current execution of the Pipeline.",
         "config" : {
-          "type" : ".DelayConfig",
-          "delay" : {
-            "duration" : 1,
-            "units" : "Seconds"
-          }
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "let startTime = new Date(event.metadata.MissedPointChanges.LastRunMaxTime);\r\n// add one millisecond and IntervalMilliseconds * loopIndex\r\nstartTime = startTime.getTime() + 1 + (event.metadata.IntervalMilliseconds * event.metadata.loopIndex);\r\nstage.setMetadata(\"StartTime\", new Date(startTime));\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "ReadParquet" ]
-      }, {
-        "name" : "WriteFile",
-        "display" : {
-          "position" : {
-            "x" : 1500,
-            "y" : 300
-          },
-          "metadata" : {
-            "parent" : "while"
-          }
-        },
-        "description" : "This Stage writes the payload to a local parquet file. ",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.File}}",
-          "eventPath" : "",
-          "connectionType" : "file",
-          "qualifier" : {
-            "type" : "write",
-            "fileName" : "{{event.metadata.FileName}}",
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "OneSecond" ]
+        "outputs" : [ "SetEndTime" ]
       }, {
         "name" : "ReadParquet",
         "display" : {
           "position" : {
             "x" : 2400,
-            "y" : 300
+            "y" : 150
           },
           "metadata" : {
             "parent" : "while"
@@ -2261,27 +1934,11 @@
         },
         "outputs" : [ "MQTT" ]
       }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 5400,
-            "y" : 300
-          },
-          "metadata" : {
-            "parent" : "while"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
         "name" : "PointsParquet",
         "display" : {
           "position" : {
-            "x" : 1042,
-            "y" : 308
+            "x" : 1050,
+            "y" : 150
           },
           "metadata" : {
             "parent" : "while"
@@ -2306,6 +1963,99 @@
           "goodNoDataOutputs" : [ ]
         },
         "outputs" : [ "WriteFile" ]
+      }, {
+        "name" : "WriteFile",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "This Stage writes the payload to a local parquet file. ",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.File}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "OneSecond" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 2850,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "In this example value change arrays are being written to the Intelligence Hub MQTT broker for ease of visibility.  ",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "MissedFromReadPointChangeParquetLimit100Offset0",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "filterList" : [ "_name", "_model", "_timestamp" ]
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "OneSecond",
+        "display" : {
+          "position" : {
+            "x" : 1950,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "ReadParquet" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 3300,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "while"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
