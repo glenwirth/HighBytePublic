@@ -2,8 +2,8 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.4",
-    "build" : "2026.10.22.1",
+    "version" : "4.5.5",
+    "build" : "2026.11.3.3",
     "stage" : "Release"
   },
   "project" : {
@@ -1515,9 +1515,9 @@
         "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
-            "duration" : 8,
+            "duration" : 1,
             "units" : "Hours"
           },
           "mode" : "interval"
@@ -2034,7 +2034,7 @@
           "failureOutputs" : [ ],
           "loopOutputs" : [ "SetStartTime" ],
           "stageTimeout" : {
-            "duration" : 5,
+            "duration" : 30,
             "units" : "Minutes"
           },
           "expression" : "return new Date(loop.metadata.EndTime) < new Date(loop.metadata.MissedPointChanges.CurrentSubscriptionTime)",
@@ -2332,155 +2332,6 @@
         "type" : "default"
       }
     }, {
-      "name" : "PopulateAssetsWithPointLookupMap",
-      "tags" : [ "PIAssetMetadataAndPointChanges" ],
-      "inputStages" : [ "DuckDB" ],
-      "stages" : [ {
-        "name" : "DuckDB",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "AssetMetadataWithPoints",
-            "path" : "",
-            "params" : {
-              "Limit" : "{{event.value.Limit}}",
-              "Offset" : "{{event.value.Offset}}"
-            },
-            "connectionName" : "DuckDB"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "ForEach" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 1792,
-            "y" : -32
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ForEach",
-        "display" : {
-          "position" : {
-            "x" : 635,
-            "y" : -144
-          },
-          "size" : {
-            "width" : 997,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SetKey" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "Return" ]
-      }, {
-        "name" : "SetKey",
-        "display" : {
-          "position" : {
-            "x" : 172,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "event.value.Key = event.value.pointName.replaceAll('.','_');\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "ReturnForEach" ]
-      }, {
-        "name" : "ReturnForEach",
-        "display" : {
-          "position" : {
-            "x" : 547,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      } ],
-      "trackActivity" : false,
-      "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "CallableTrigger",
-        "display" : {
-          "position" : {
-            "x" : -425,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerCallable",
-          "enabled" : true,
-          "parameters" : {
-            "type" : "inline",
-            "model" : {
-              "name" : "params",
-              "tags" : [ ],
-              "attributes" : [ {
-                "attributeType" : "Internal",
-                "name" : "Limit",
-                "nullable" : false,
-                "required" : false,
-                "array" : false,
-                "defaultValue" : 100,
-                "internalType" : {
-                  "variant" : "Int64"
-                }
-              }, {
-                "attributeType" : "Internal",
-                "name" : "Offset",
-                "nullable" : false,
-                "required" : false,
-                "array" : false,
-                "defaultValue" : 0,
-                "internalType" : {
-                  "variant" : "Int64"
-                }
-              } ],
-              "modelVersion" : ""
-            }
-          }
-        }
-      } ],
-      "errorHandler" : {
-        "type" : "default"
-      }
-    }, {
       "name" : "ReadPointChangeParquetLimit100Offset0",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "GetLastRunMaxTime" ],
@@ -2573,8 +2424,8 @@
           "failureOutputs" : [ "MissedPointChanges" ],
           "loopOutputs" : [ "SetLimitAndOffset" ],
           "stageTimeout" : {
-            "duration" : 15,
-            "units" : "Seconds"
+            "duration" : 5,
+            "units" : "Minutes"
           },
           "expression" : "return loop.metadata.Data === true;",
           "loopValue" : "LAST_RETURN"
@@ -3002,16 +2853,5 @@
     } ],
     "hubs" : [ ]
   },
-  "remoteConfig" : {
-    "remoteUrl" : "",
-    "token" : "",
-    "clientId" : "f2eba9c2-c76e-4a35-a630-792551bbb071",
-    "name" : "",
-    "features" : {
-      "centralConfig" : true,
-      "centralData" : false
-    },
-    "requestTimeoutSeconds" : 5,
-    "heartbeatIntervalSeconds" : 10
-  }
+  "identityProviders" : { }
 }
