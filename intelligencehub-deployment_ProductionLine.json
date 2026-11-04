@@ -171,12 +171,26 @@
     "pipelines" : [ {
       "name" : "Site1ProductionLine",
       "tags" : [ "ProductionLine" ],
-      "inputStages" : [ "ObjectToArray" ],
+      "inputStages" : [ "IsEventTrigger" ],
       "stages" : [ {
-        "name" : "ForEach",
+        "name" : "JustPLCs",
         "display" : {
           "position" : {
             "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[$contains($keys($)[0], /^PLC/)][]"
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 1590,
             "y" : -150
           },
           "size" : {
@@ -200,7 +214,7 @@
         "name" : "ObjectToArray",
         "display" : {
           "position" : {
-            "x" : 240,
+            "x" : 690,
             "y" : 0
           }
         },
@@ -210,20 +224,6 @@
           "transformExpression" : "$spread(event.value)"
         },
         "outputs" : [ "JustPLCs" ]
-      }, {
-        "name" : "JustPLCs",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value[$contains($keys($)[0], /^PLC/)][]"
-        },
-        "outputs" : [ "ForEach" ]
       }, {
         "name" : "PLCData",
         "display" : {
@@ -270,6 +270,44 @@
         },
         "outputs" : [ "MQTT" ]
       }, {
+        "name" : "IsEventTrigger",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.triggerName === \"EventTrigger\")",
+            "outputs" : [ "ObjectToArray" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "Delay2Seconds" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
         "name" : "MQTT",
         "display" : {
           "position" : {
@@ -301,30 +339,49 @@
         },
         "outputs" : [ "Return" ]
       }, {
-        "name" : "Return",
+        "name" : "Delay2Seconds",
         "display" : {
           "position" : {
-            "x" : 1050,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
+            "x" : 680,
+            "y" : 171
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".ReturnConfig"
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 2,
+            "units" : "Seconds"
+          }
         },
         "outputs" : [ ]
       } ],
       "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -431,
+            "y" : 165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
+          "interval" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          },
+          "mode" : "continuous"
+        }
+      }, {
         "name" : "EventTrigger",
         "display" : {
           "position" : {
-            "x" : -450,
-            "y" : 0
+            "x" : -448,
+            "y" : -40
           }
         },
         "description" : "",
