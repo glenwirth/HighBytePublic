@@ -168,7 +168,7 @@
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "SELECT  * from AssetMetadata order by _id limit {{this.Limit}} offset {{this.Offset}}",
+        "query" : "SELECT  * from AssetMetadata order by id limit {{this.Limit}} offset {{this.Offset}}",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -212,11 +212,11 @@
         }
       }
     }, {
-      "name" : "AssetMetadataWithPointsOrderByPointIdLimitAndOffset",
+      "name" : "AssetMetadataWithPointsOrderByIdLimitAndOffset",
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "SELECT  * from AssetMetadata where PointId >= 0 order by PointId limit {{this.Limit}} offset {{this.Offset}}",
+        "query" : "SELECT  * from AssetMetadata where PointId >= 0 order by _id limit {{this.Limit}} offset {{this.Offset}}",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -2365,7 +2365,7 @@
           "failureOutputs" : [ ],
           "reference" : {
             "type" : "Input",
-            "name" : "AssetMetadataWithPointsOrderByPointIdLimitAndOffset",
+            "name" : "AssetMetadataWithPointsOrderByIdLimitAndOffset",
             "path" : "",
             "params" : {
               "Limit" : "1000",
@@ -2636,7 +2636,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 1,
             "units" : "Minutes"
