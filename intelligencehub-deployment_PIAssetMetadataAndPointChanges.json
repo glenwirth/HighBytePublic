@@ -1340,7 +1340,7 @@
         "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 1,
             "units" : "Hours"
