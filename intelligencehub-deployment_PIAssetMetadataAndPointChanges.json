@@ -489,7 +489,12 @@
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "Select * from MissedPointChanges where PipelineName = '{{this.PipelineName}}' order by _id limit 1"
+        "query" : "Select * from MissedPointChanges order by _id limit 1",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
       },
       "cacheLifetime" : {
         "enabled" : false
@@ -2140,7 +2145,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : false,
+          "enabled" : true,
           "interval" : {
             "duration" : 5,
             "units" : "Seconds"
