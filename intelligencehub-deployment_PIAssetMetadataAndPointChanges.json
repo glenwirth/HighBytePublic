@@ -1223,7 +1223,7 @@
       "instances" : [ ]
     },
     "pipelines" : [ {
-      "name" : "MetadataAssetAttributesToDuckDBParentPipeline",
+      "name" : "MetadataAssetAttributesToDuckDBParent",
       "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to duckdb;",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetDatabaseAndTopAssetName" ],
