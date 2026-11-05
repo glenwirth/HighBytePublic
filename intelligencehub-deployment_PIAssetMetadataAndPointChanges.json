@@ -212,11 +212,59 @@
         }
       }
     }, {
-      "name" : "AssetMetadataWithPoints",
+      "name" : "AssetMetadataWithPointsOrderByPointIdLimitAndOffset",
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "SELECT  * from AssetMetadata where PointId >= 0 order by id limit {{this.Limit}} offset {{this.Offset}}",
+        "query" : "SELECT  * from AssetMetadata where PointId >= 0 order by PointId limit {{this.Limit}} offset {{this.Offset}}",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Limit",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : 100,
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Offset",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : 0,
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "CountAssetMetadataWithPoints",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "SELECT  count(*) as count from AssetMetadata where PointId >= 0 ",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -287,6 +335,28 @@
       "type" : "jdbc",
       "qualifier" : {
         "query" : "CREATE SEQUENCE IF NOT EXISTS missedpointchanges_id_seq START 1;\n\nCREATE TABLE IF NOT EXISTS  MissedPointChanges (\n    _id                     BIGINT PRIMARY KEY DEFAULT nextval('missedpointchanges_id_seq'),\n    \"_model\"                VARCHAR,\n    \"_timestamp\"            BIGINT,\n    \"PipelineName\"          VARCHAR,\n    \"LastRunMaxTime\"        TIMESTAMP,\n    \"CurrentSubscriptionTime\" TIMESTAMP,\n    \"_name\"                 VARCHAR,\n    \"ArrayOfPoints\"         VARCHAR,\n    \"Id\"                    VARCHAR\n);",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "DeleteFromAssetMetadata",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "Delete FROM AssetMetadata;",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -1214,7 +1284,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "GetAssetChildren" ]
       }, {
@@ -1265,7 +1335,7 @@
         "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 1,
             "units" : "Hours"
@@ -1282,137 +1352,6 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
-        "name" : "SetFileName",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "AssetMetadata" ]
-      }, {
-        "name" : "HasParent",
-        "display" : {
-          "position" : {
-            "x" : 1590,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.parent != \"\")",
-            "outputs" : [ "asset_attributes_with_parent" ],
-            "description" : "NotEmpty"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "asset_attributes_no_parent" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "Delay1Second",
-        "display" : {
-          "position" : {
-            "x" : 5940,
-            "y" : -165
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DelayConfig",
-          "delay" : {
-            "duration" : 1,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "UpsertAssetMetadata" ]
-      }, {
-        "name" : "WriteParquet",
-        "display" : {
-          "position" : {
-            "x" : 5490,
-            "y" : -165
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.File}}",
-          "eventPath" : "",
-          "connectionType" : "file",
-          "qualifier" : {
-            "type" : "write",
-            "fileName" : "{{event.metadata.FileName}}",
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "Delay1Second" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 6840,
-            "y" : 75
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "asset_attributes_with_parent",
-        "display" : {
-          "position" : {
-            "x" : 2040,
-            "y" : -67
-          }
-        },
-        "description" : "This Stage reads the data from AVEVA PI System.",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "MetadataAssetAttributes",
-            "path" : "",
-            "params" : {
-              "Database" : "{{event.metadata.Database}}",
-              "Name" : "{{event.value._name}}",
-              "Parent" : "{{event.metadata.parent}}"
-            },
-            "connectionName" : "PI"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "HasAttributes" ]
-      }, {
-        "name" : "GetAttributes",
-        "display" : {
-          "position" : {
-            "x" : 2940,
-            "y" : -45
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value[0].attributes"
-        },
-        "outputs" : [ "ArrayLengthGT0" ]
-      }, {
         "name" : "ArrayLengthGT0",
         "display" : {
           "position" : {
@@ -1429,34 +1368,9 @@
             "description" : "Value Is True"
           }, {
             "expression" : "return true",
-            "outputs" : [ "Return" ],
+            "outputs" : [ "SetReturnToSingleObject" ],
             "description" : "Default"
           } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "UpsertAssetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 6390,
-            "y" : -165
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "UpsertAssetMetadata",
-            "path" : "",
-            "params" : {
-              "FileName" : "{{event.metadata.FileName}}"
-            },
-            "connectionName" : "DuckDB"
-          },
-          "handleGoodNoData" : true,
-          "goodNoDataOutputs" : [ "Return" ]
         },
         "outputs" : [ ]
       }, {
@@ -1487,6 +1401,20 @@
         },
         "outputs" : [ "HasAttributes" ]
       }, {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "AssetMetadata" ]
+      }, {
         "name" : "AssetMetadata",
         "display" : {
           "position" : {
@@ -1501,20 +1429,6 @@
         },
         "outputs" : [ "HasParent" ]
       }, {
-        "name" : "SetPiplineName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SetFileName" ]
-      }, {
         "name" : "ParquetFormat",
         "display" : {
           "position" : {
@@ -1528,6 +1442,184 @@
           "outgoingType" : "File"
         },
         "outputs" : [ "WriteParquet" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 7290,
+            "y" : 75
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "GetAttributes",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : -45
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[0].attributes"
+        },
+        "outputs" : [ "ArrayLengthGT0" ]
+      }, {
+        "name" : "asset_attributes_with_parent",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : -67
+          }
+        },
+        "description" : "This Stage reads the data from AVEVA PI System.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MetadataAssetAttributes",
+            "path" : "",
+            "params" : {
+              "Database" : "{{event.metadata.Database}}",
+              "Name" : "{{event.value._name}}",
+              "Parent" : "{{event.metadata.parent}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "HasAttributes" ]
+      }, {
+        "name" : "SetReturnToSingleObject",
+        "display" : {
+          "position" : {
+            "x" : 6840,
+            "y" : 75
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n    \"return\": event.value\r\n}"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "WriteParquet",
+        "display" : {
+          "position" : {
+            "x" : 5490,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.File}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Delay1Second" ]
+      }, {
+        "name" : "Delay1Second",
+        "display" : {
+          "position" : {
+            "x" : 5940,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DelayConfig",
+          "delay" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "UpsertAssetMetadata" ]
+      }, {
+        "name" : "HasAttributes",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.value[0].hasOwnProperty('attributes'))",
+            "outputs" : [ "GetAttributes" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "SetReturnToSingleObject" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "UpsertAssetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "UpsertAssetMetadata",
+            "path" : "",
+            "params" : {
+              "FileName" : "{{event.metadata.FileName}}"
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "SetReturnToSingleObject" ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "HasParent",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.parent != \"\")",
+            "outputs" : [ "asset_attributes_with_parent" ],
+            "description" : "NotEmpty"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "asset_attributes_no_parent" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
       }, {
         "name" : "ForEachAttribute",
         "display" : {
@@ -1553,41 +1645,19 @@
         },
         "outputs" : [ "ParquetFormat" ]
       }, {
-        "name" : "SetReturnToSingleObject",
+        "name" : "SetPiplineName",
         "display" : {
           "position" : {
-            "x" : 6390,
-            "y" : 165
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "{\r\n    \"return\": event.value\r\n}"
-        },
-        "outputs" : [ "Return" ]
-      }, {
-        "name" : "HasAttributes",
-        "display" : {
-          "position" : {
-            "x" : 2490,
+            "x" : 240,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.value[0].hasOwnProperty('attributes'))",
-            "outputs" : [ "GetAttributes" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "SetReturnToSingleObject" ],
-            "description" : "Default"
-          } ]
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ ]
+        "outputs" : [ "SetFileName" ]
       }, {
         "name" : "ApplyModel",
         "display" : {
@@ -1727,7 +1797,7 @@
         "type" : "default"
       }
     }, {
-      "name" : "MissedFromReadPointChangeParquetLimit100Offset0",
+      "name" : "MissedFromReadPointChangeParquet",
       "description" : "This Pipeline executes many times to index through a time period of historical PI Point value changes.  The Pipeline obtains data from PI Data Archive and models the data before formatting it into an array.  The modeled data would typically be written to a file for a data lake or written directly to a data warehouse table.  The dates for the time period and the index interval time are stored in JavaScript Stages that must be edited.  A date is also stored as a State Variable that must be deleted to reset the Pipeline.  The solution relies on a Parquet file that is stored locally.",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPipelineName" ],
@@ -2070,7 +2140,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 5,
             "units" : "Seconds"
@@ -2082,7 +2152,7 @@
         "type" : "default"
       }
     }, {
-      "name" : "ReadPointChangeParquetLimit100Offset0",
+      "name" : "ReadPointChangeParquetLimit1000Offset0",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "GetLastRunMaxTime" ],
       "stages" : [ {
@@ -2124,7 +2194,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "// set initial last run time\r\nlet initialLastRunMaxTime = new Date('2026-10-01T00:00:00.000Z');\r\nlet runLastMaxTime = new Date(state.pipeline.get(\"RunMaxTime\", initialLastRunMaxTime));\r\nstage.setMetadata(\"LastRunMaxTime\", runLastMaxTime.toISOString());\r\nstage.setValue(event.value);"
+          "transformExpression" : "// set initial last run time\r\nlet initialLastRunMaxTime = new Date();\r\nlet runLastMaxTime = new Date(state.pipeline.get(\"RunMaxTime\", initialLastRunMaxTime));\r\nstage.setMetadata(\"LastRunMaxTime\", runLastMaxTime.toISOString());\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "SetPiplineName" ]
       }, {
@@ -2295,11 +2365,11 @@
           "failureOutputs" : [ ],
           "reference" : {
             "type" : "Input",
-            "name" : "AssetMetadataWithPoints",
+            "name" : "AssetMetadataWithPointsOrderByPointIdLimitAndOffset",
             "path" : "",
             "params" : {
-              "Limit" : null,
-              "Offset" : "100"
+              "Limit" : "1000",
+              "Offset" : "0"
             },
             "connectionName" : "DuckDB"
           },
@@ -2566,7 +2636,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 1,
             "units" : "Minutes"
@@ -2602,6 +2672,18 @@
       "token" : "5NxhJXaoyEKSrw6v8BQftDlfjxygCkiw"
     } ],
     "hubs" : [ ]
+  },
+  "remoteConfig" : {
+    "remoteUrl" : "",
+    "token" : "",
+    "clientId" : "f2eba9c2-c76e-4a35-a630-792551bbb071",
+    "name" : "",
+    "features" : {
+      "centralConfig" : true,
+      "centralData" : false
+    },
+    "requestTimeoutSeconds" : 5,
+    "heartbeatIntervalSeconds" : 10
   },
   "identityProviders" : { }
 }
