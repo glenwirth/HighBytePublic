@@ -610,7 +610,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "..//appData//pi.parquet",
+            "defaultValue" : "..//appData//ReadPointChangeParquetLimit1000Offset0.parquet",
             "internalType" : {
               "variant" : "String"
             }
@@ -620,7 +620,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : 100,
+            "defaultValue" : 10000,
             "internalType" : {
               "variant" : "String"
             }
