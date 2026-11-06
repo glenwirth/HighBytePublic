@@ -37,7 +37,7 @@
         "strategy" : {
           "type" : "default"
         },
-        "connectString" : "jdbc:duckdb:../appData/duckdb.db;memory_limit=4GB",
+        "connectString" : "jdbc:duckdb:../shared/duckdb.db;memory_limit=4GB",
         "classPath" : "org.duckdb.DuckDBDriver",
         "sqlSyntax" : "postgresql",
         "database" : ""
@@ -113,7 +113,7 @@
       }
     }, {
       "name" : "PI",
-      "uri" : "osisoft.afsdk://localhost:45290",
+      "uri" : "osisoft.afsdk://host.docker.internal:45290",
       "description" : "This is a Connection to AVEVA PI System.  The purpose of the Connection is to obtain data for starter solution examples and, specifically starter solutions related to PI Asset Framework.  HighByte note: this Connection uses a dedicated agent installed on a demo system EC2.",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "writes" : {
@@ -1228,6 +1228,44 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetDatabaseAndTopAssetName" ],
       "stages" : [ {
+        "name" : "SetDatabaseAndTopAssetName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "GetAssetChildren" ]
+      }, {
+        "name" : "ForEachAsset",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "Subpipeline" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Minutes"
+          }
+        },
+        "outputs" : [ ]
+      }, {
         "name" : "GetAssetChildren",
         "display" : {
           "position" : {
@@ -1255,44 +1293,6 @@
         },
         "outputs" : [ "ForEachAsset" ]
       }, {
-        "name" : "ForEachAsset",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : -150
-          },
-          "size" : {
-            "width" : 1050,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "Subpipeline" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Minutes"
-          }
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "SetDatabaseAndTopAssetName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "GetAssetChildren" ]
-      }, {
         "name" : "ReturnAsset",
         "display" : {
           "position" : {
@@ -1312,8 +1312,8 @@
         "name" : "Subpipeline",
         "display" : {
           "position" : {
-            "x" : 141,
-            "y" : 148
+            "x" : 150,
+            "y" : 150
           },
           "metadata" : {
             "parent" : "ForEachAsset"
@@ -1330,22 +1330,20 @@
       "trackActivity" : false,
       "queueSize" : 10000,
       "triggers" : [ {
-        "name" : "PolledTrigger",
+        "name" : "CronTrigger",
         "display" : {
           "position" : {
             "x" : -450,
             "y" : 0
           }
         },
-        "description" : "An asset attribute metadata Pipeline typically runs infrequently.   Perhaps every few hours or fractions of a day.",
+        "description" : "",
         "config" : {
-          "type" : ".TriggerPolled",
+          "type" : ".TriggerCron",
           "enabled" : true,
-          "interval" : {
-            "duration" : 1,
-            "units" : "Hours"
-          },
-          "mode" : "interval"
+          "logging" : "on",
+          "schedule" : "0 0 * * *",
+          "timezone" : "local"
         }
       } ],
       "errorHandler" : {
