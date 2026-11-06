@@ -37,7 +37,7 @@
         "strategy" : {
           "type" : "default"
         },
-        "connectString" : "jdbc:duckdb:../shared/duckdb.db;memory_limit=4GB",
+        "connectString" : "jdbc:duckdb:../appData/duckdb.db;memory_limit=4GB",
         "classPath" : "org.duckdb.DuckDBDriver",
         "sqlSyntax" : "postgresql",
         "database" : ""
@@ -113,7 +113,7 @@
       }
     }, {
       "name" : "PI",
-      "uri" : "osisoft.afsdk://host.docker.internal:45290",
+      "uri" : "osisoft.afsdk://localhost:45290",
       "description" : "This is a Connection to AVEVA PI System.  The purpose of the Connection is to obtain data for starter solution examples and, specifically starter solutions related to PI Asset Framework.  HighByte note: this Connection uses a dedicated agent installed on a demo system EC2.",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "writes" : {
@@ -752,7 +752,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "",
+            "defaultValue" : "ReactorsDemo",
             "internalType" : {
               "variant" : "String"
             }
@@ -762,7 +762,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "",
+            "defaultValue" : "Plant",
             "internalType" : {
               "variant" : "String"
             }
@@ -1238,7 +1238,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"ReactorsDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"Plant\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "GetAssetChildren" ]
       }, {
@@ -1333,8 +1333,8 @@
         "name" : "CronTrigger",
         "display" : {
           "position" : {
-            "x" : -450,
-            "y" : 0
+            "x" : -454,
+            "y" : -3
           }
         },
         "description" : "",
@@ -1344,6 +1344,24 @@
           "logging" : "on",
           "schedule" : "0 0 * * *",
           "timezone" : "local"
+        }
+      }, {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -454,
+            "y" : 287
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
+          "interval" : {
+            "duration" : 36,
+            "units" : "Days"
+          },
+          "mode" : "interval"
         }
       } ],
       "errorHandler" : {
