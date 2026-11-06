@@ -1289,7 +1289,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"ReactorsDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"Plant\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "AssetMetadata" ]
       }, {
