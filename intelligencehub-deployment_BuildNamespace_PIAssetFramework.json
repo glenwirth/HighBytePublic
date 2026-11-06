@@ -1211,7 +1211,7 @@
           } ],
           "expandArray" : false
         },
-        "outputs" : [ "PartialImport" ]
+        "outputs" : [ "EventLog", "PartialImport" ]
       }, {
         "name" : "PartialImport",
         "display" : {
@@ -1241,8 +1241,8 @@
         "name" : "EventLog",
         "display" : {
           "position" : {
-            "x" : 3795,
-            "y" : 67
+            "x" : 3738,
+            "y" : 340
           }
         },
         "description" : "",
@@ -1446,7 +1446,7 @@
             "name" : "name",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return event.value._name;"
+              "expression" : "return event.value._name.replaceAll('.','-').replaceAll('(','-').replaceAll('/','-').replaceAll(')','-').replaceAll(')','-').replaceAll('%','-');"
             }
           }, {
             "name" : "parentNamespaceId",
@@ -1708,7 +1708,7 @@
             "name" : "name",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return event.value.name;"
+              "expression" : "return event.value.name.replaceAll('|','-');"
             }
           }, {
             "name" : "parentNamespaceId",
