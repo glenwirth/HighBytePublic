@@ -2,8 +2,8 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.2",
-    "build" : "2026.9.22.1",
+    "version" : "4.5.4",
+    "build" : "2026.10.22.1",
     "stage" : "Release"
   },
   "project" : {
@@ -409,6 +409,148 @@
         "modelVersion" : ""
       } ],
       "instances" : [ {
+        "name" : "LocationsDetail_Lego_Instance",
+        "tags" : [ "i3XLocationTracker" ],
+        "model" : "LocationsDetail",
+        "rootValueAs" : "Object",
+        "template" : {
+          "type" : "Off"
+        },
+        "executeMode" : "V4",
+        "initExpression" : "",
+        "attributes" : [ {
+          "name" : "Timestamp",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Timestamp",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "SectorId",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].SectorId",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "X",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".X",
+              "params" : {
+                "Topic" : "{{this.Topic}}/Position"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Y",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Y",
+              "params" : {
+                "Topic" : "{{this.Topic}}/Position"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Z",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Z",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Interval",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Interval",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Battery",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Battery",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "IsMoving",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].IsMoving",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        } ],
+        "parameters" : {
+          "type" : "inline",
+          "model" : {
+            "name" : "params",
+            "tags" : [ ],
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "Topic",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "defaultValue" : "Site1/AMRs/AMR2",
+              "internalType" : {
+                "variant" : "String"
+              }
+            } ],
+            "modelVersion" : ""
+          }
+        }
+      }, {
         "name" : "Locations_Instance",
         "tags" : [ "i3XLocationTracker" ],
         "model" : "Locations",
@@ -518,6 +660,122 @@
               "required" : false,
               "array" : false,
               "defaultValue" : "Site1/AMRs/AMR1",
+              "internalType" : {
+                "variant" : "String"
+              }
+            } ],
+            "modelVersion" : ""
+          }
+        }
+      }, {
+        "name" : "Locations_Lego_Instance",
+        "tags" : [ "i3XLocationTracker" ],
+        "model" : "Locations",
+        "rootValueAs" : "Object",
+        "template" : {
+          "type" : "Off"
+        },
+        "executeMode" : "V4",
+        "initExpression" : "",
+        "attributes" : [ {
+          "name" : "Object",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Empty"
+            }
+          }
+        }, {
+          "name" : "Locations",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Instance",
+              "name" : "LocationsDetail_Lego_Instance",
+              "path" : "",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              }
+            }
+          },
+          "attributes" : [ {
+            "name" : "Timestamp",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "SectorId",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "X",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Y",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Z",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Interval",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Battery",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "IsMoving",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          } ]
+        } ],
+        "parameters" : {
+          "type" : "inline",
+          "model" : {
+            "name" : "params",
+            "tags" : [ ],
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "Topic",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "defaultValue" : "Site1/AMRs/AMR2",
               "internalType" : {
                 "variant" : "String"
               }
@@ -1089,13 +1347,13 @@
             "name" : "X",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return ((event.value.X + (4*Math.random()-2)) * 1000) + parseInt(139000, 10)"
+              "expression" : "return event.value.X + (4*Math.random()-2) "
             }
           }, {
             "name" : "Y",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return ((event.value.Y + (4*Math.random()-2)) * 1000) + parseInt(188000, 10)"
+              "expression" : "return event.value.Y + (4*Math.random()-2)"
             }
           }, {
             "name" : "Z",
@@ -1458,13 +1716,13 @@
             "name" : "X",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return ((event.value.X + (4*Math.random()-2)) * 1000) + parseInt(139000, 10)"
+              "expression" : "return event.value.X + (4*Math.random()-2)"
             }
           }, {
             "name" : "Y",
             "expression" : {
               "type" : "JavaScript",
-              "expression" : "return ((event.value.Y + (4*Math.random()-2)) * 1000) + parseInt(188000, 10)"
+              "expression" : "return event.value.Y + (4*Math.random()-2)"
             }
           }, {
             "name" : "Z",
@@ -1540,52 +1798,7 @@
       "name" : "i3XLocationTracker"
     } ],
     "functions" : [ ],
-    "namespace" : [ {
-      "type" : "local",
-      "id" : "7f57989d-3c59-4cd7-a665-9c65b9012920",
-      "name" : "Site1",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "a54f7076-83ba-424d-afcc-b70a2c7e1af2",
-      "name" : "AMRs",
-      "parentNamespaceId" : "7f57989d-3c59-4cd7-a665-9c65b9012920",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "f8f082bd-d7ed-49e4-9c28-e2142239eef6",
-      "name" : "AMR1",
-      "parentNamespaceId" : "a54f7076-83ba-424d-afcc-b70a2c7e1af2",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR1"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "ca3a748e-ba03-426f-bcbd-0450bffe3404",
-      "name" : "AMR2",
-      "parentNamespaceId" : "a54f7076-83ba-424d-afcc-b70a2c7e1af2",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR2"
-        }
-      }
-    } ],
+    "namespace" : [ ],
     "lookupMap" : [ {
       "name" : "Locations",
       "tags" : [ "i3XLocationTracker" ],
