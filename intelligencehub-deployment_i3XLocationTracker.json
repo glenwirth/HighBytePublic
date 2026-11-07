@@ -1967,7 +1967,50 @@
       "name" : "i3XLocationTracker"
     } ],
     "functions" : [ ],
-    "namespace" : [ ],
+    "namespace" : [ {
+      "type" : "local",
+      "id" : "1b35be00-707d-455f-9b31-fceb807dba21",
+      "name" : "Site1",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Empty"
+      }
+    }, {
+      "type" : "local",
+      "id" : "378f2112-541b-4684-977f-bc54bc21245d",
+      "name" : "AMRs",
+      "parentNamespaceId" : "1b35be00-707d-455f-9b31-fceb807dba21",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Empty"
+      }
+    }, {
+      "type" : "local",
+      "id" : "405155b8-700e-4930-b655-26a3581b2d8c",
+      "name" : "AMR1",
+      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Locations_Instance",
+        "path" : "",
+        "params" : { }
+      }
+    }, {
+      "type" : "local",
+      "id" : "a9628484-e125-4dd3-889e-eb0a119a18c5",
+      "name" : "AMR2",
+      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
+      "metadata" : [ ],
+      "reference" : {
+        "type" : "Instance",
+        "name" : "Locations_Instance",
+        "path" : "",
+        "params" : {
+          "Topic" : "Site1/AMRs/AMR2"
+        }
+      }
+    } ],
     "lookupMap" : [ {
       "name" : "Locations",
       "tags" : [ "i3XLocationTracker" ],
@@ -5890,7 +5933,22 @@
   },
   "network" : {
     "version" : 0,
-    "groups" : [ ],
+    "groups" : [ {
+      "name" : "TEst",
+      "token" : "5NxhJXaoyEKSrw6v8BQftDlfjxygCkiw"
+    } ],
     "hubs" : [ ]
+  },
+  "remoteConfig" : {
+    "remoteUrl" : "",
+    "token" : "",
+    "clientId" : "f2eba9c2-c76e-4a35-a630-792551bbb071",
+    "name" : "",
+    "features" : {
+      "centralConfig" : true,
+      "centralData" : false
+    },
+    "requestTimeoutSeconds" : 5,
+    "heartbeatIntervalSeconds" : 10
   }
 }
