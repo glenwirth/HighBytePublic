@@ -542,7 +542,7 @@
               "nullable" : false,
               "required" : false,
               "array" : false,
-              "defaultValue" : "Site1/AMRs/AMR2",
+              "defaultValue" : "",
               "internalType" : {
                 "variant" : "String"
               }
@@ -659,7 +659,7 @@
               "nullable" : false,
               "required" : false,
               "array" : false,
-              "defaultValue" : "Site1/AMRs/AMR1",
+              "defaultValue" : "",
               "internalType" : {
                 "variant" : "String"
               }
@@ -775,7 +775,7 @@
               "nullable" : false,
               "required" : false,
               "array" : false,
-              "defaultValue" : "Site1/AMRs/AMR2",
+              "defaultValue" : "",
               "internalType" : {
                 "variant" : "String"
               }
@@ -1994,7 +1994,9 @@
         "type" : "Instance",
         "name" : "Locations_Instance",
         "path" : "",
-        "params" : { }
+        "params" : {
+          "Topic" : "Site1/AMRs/AMR1"
+        }
       }
     }, {
       "type" : "local",
