@@ -9,39 +9,6 @@
   "project" : {
     "version" : 15,
     "connections" : [ {
-      "name" : "Locations_DuckDB",
-      "uri" : "jdbc://localhost:443",
-      "tags" : [ "i3XLocationTracker" ],
-      "writes" : {
-        "flattenModeledValues" : false
-      },
-      "writeThrottle" : {
-        "enabled" : false,
-        "maxBatchSizePerTarget" : 1000,
-        "batchDelay" : {
-          "duration" : 20,
-          "units" : "Milliseconds"
-        }
-      },
-      "subscriptions" : { },
-      "storeForward" : {
-        "enabled" : false,
-        "maxEntries" : 100,
-        "waitOnFailureInterval" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "settings" : {
-        "strategy" : {
-          "type" : "default"
-        },
-        "connectString" : "jdbc:duckdb:../shared/plant_data.duckdb;memory_limit=4GB",
-        "classPath" : "org.duckdb.DuckDBDriver",
-        "sqlSyntax" : "postgresql",
-        "database" : ""
-      }
-    }, {
       "name" : "Locations_SQLite",
       "uri" : "jdbc.sqlite://Locations_SQLite",
       "tags" : [ "i3XLocationTracker" ],
@@ -110,88 +77,6 @@
     } ],
     "conditions" : [ ],
     "inputs" : [ {
-      "name" : "DeleteFromLocations",
-      "connection" : "Locations_DuckDB",
-      "type" : "jdbc",
-      "qualifier" : {
-        "query" : "delete from Locations"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "Locations",
-      "connection" : "Locations_DuckDB",
-      "type" : "jdbc",
-      "qualifier" : {
-        "query" : "select * from Locations where Id > {{this.Id}} and (AltPathNumber = {{this.AltPathNumber}} or AltPathNumber = 0) order by Id Limit 1",
-        "index" : {
-          "enabled" : false,
-          "indexName" : "",
-          "indexValue" : ""
-        }
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "Id",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 1,
-            "internalType" : {
-              "variant" : "String"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "AltPathNumber",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 0,
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
-    }, {
-      "name" : "LocationsTableExists",
-      "connection" : "Locations_DuckDB",
-      "type" : "jdbc",
-      "qualifier" : {
-        "query" : "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'Locations';"
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
       "name" : "DeleteFromLocations",
       "connection" : "Locations_SQLite",
       "type" : "jdbc.sqlite",
@@ -313,27 +198,6 @@
         "tags" : [ "i3XLocationTracker" ],
         "attributes" : [ {
           "attributeType" : "Internal",
-          "name" : "Object",
-          "nullable" : false,
-          "required" : false,
-          "array" : false,
-          "internalType" : {
-            "variant" : "Any"
-          }
-        }, {
-          "attributeType" : "Modeled",
-          "name" : "Locations",
-          "nullable" : false,
-          "required" : false,
-          "array" : true,
-          "model" : "LocationsDetail"
-        } ],
-        "modelVersion" : ""
-      }, {
-        "name" : "LocationsDetail",
-        "tags" : [ "i3XLocationTracker" ],
-        "attributes" : [ {
-          "attributeType" : "Internal",
           "name" : "Timestamp",
           "nullable" : false,
           "required" : false,
@@ -409,9 +273,151 @@
         "modelVersion" : ""
       } ],
       "instances" : [ {
-        "name" : "LocationsDetail_Lego_Instance",
+        "name" : "Locations_Instance",
         "tags" : [ "i3XLocationTracker" ],
-        "model" : "LocationsDetail",
+        "model" : "Locations",
+        "rootValueAs" : "Object",
+        "template" : {
+          "type" : "Off"
+        },
+        "executeMode" : "V4",
+        "initExpression" : "",
+        "attributes" : [ {
+          "name" : "Timestamp",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Timestamp",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "SectorId",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].SectorId",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "X",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].X",
+              "params" : {
+                "Topic" : "{{this.Topic}}/Position"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Y",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Y",
+              "params" : {
+                "Topic" : "{{this.Topic}}/Position"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Z",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Z",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Interval",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Interval",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "Battery",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].Battery",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        }, {
+          "name" : "IsMoving",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations[0].IsMoving",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "i3XLocationTracker_MQTT"
+            }
+          }
+        } ],
+        "parameters" : {
+          "type" : "inline",
+          "model" : {
+            "name" : "params",
+            "tags" : [ ],
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "Topic",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "defaultValue" : "",
+              "internalType" : {
+                "variant" : "String"
+              }
+            } ],
+            "modelVersion" : ""
+          }
+        }
+      }, {
+        "name" : "Locations_Lego_Instance",
+        "tags" : [ "i3XLocationTracker" ],
+        "model" : "Locations",
         "rootValueAs" : "Object",
         "template" : {
           "type" : "Off"
@@ -530,239 +536,6 @@
               "connectionName" : "i3XLocationTracker_MQTT"
             }
           }
-        } ],
-        "parameters" : {
-          "type" : "inline",
-          "model" : {
-            "name" : "params",
-            "tags" : [ ],
-            "attributes" : [ {
-              "attributeType" : "Internal",
-              "name" : "Topic",
-              "nullable" : false,
-              "required" : false,
-              "array" : false,
-              "defaultValue" : "",
-              "internalType" : {
-                "variant" : "String"
-              }
-            } ],
-            "modelVersion" : ""
-          }
-        }
-      }, {
-        "name" : "Locations_Instance",
-        "tags" : [ "i3XLocationTracker" ],
-        "model" : "Locations",
-        "rootValueAs" : "Object",
-        "template" : {
-          "type" : "Off"
-        },
-        "executeMode" : "V4",
-        "initExpression" : "",
-        "attributes" : [ {
-          "name" : "Object",
-          "expression" : {
-            "type" : "Reference",
-            "reference" : {
-              "type" : "Empty"
-            }
-          }
-        }, {
-          "name" : "Locations",
-          "expression" : {
-            "type" : "Reference",
-            "reference" : {
-              "type" : "Input",
-              "name" : "Topic",
-              "path" : ".Locations",
-              "params" : {
-                "Topic" : "{{this.Topic}}"
-              },
-              "connectionName" : "i3XLocationTracker_MQTT"
-            }
-          },
-          "attributes" : [ {
-            "name" : "Timestamp",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "SectorId",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "X",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Y",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Z",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Interval",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Battery",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "IsMoving",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          } ]
-        } ],
-        "parameters" : {
-          "type" : "inline",
-          "model" : {
-            "name" : "params",
-            "tags" : [ ],
-            "attributes" : [ {
-              "attributeType" : "Internal",
-              "name" : "Topic",
-              "nullable" : false,
-              "required" : false,
-              "array" : false,
-              "defaultValue" : "",
-              "internalType" : {
-                "variant" : "String"
-              }
-            } ],
-            "modelVersion" : ""
-          }
-        }
-      }, {
-        "name" : "Locations_Lego_Instance",
-        "tags" : [ "i3XLocationTracker" ],
-        "model" : "Locations",
-        "rootValueAs" : "Object",
-        "template" : {
-          "type" : "Off"
-        },
-        "executeMode" : "V4",
-        "initExpression" : "",
-        "attributes" : [ {
-          "name" : "Object",
-          "expression" : {
-            "type" : "Reference",
-            "reference" : {
-              "type" : "Empty"
-            }
-          }
-        }, {
-          "name" : "Locations",
-          "expression" : {
-            "type" : "Reference",
-            "reference" : {
-              "type" : "Instance",
-              "name" : "LocationsDetail_Lego_Instance",
-              "path" : "",
-              "params" : {
-                "Topic" : "{{this.Topic}}"
-              }
-            }
-          },
-          "attributes" : [ {
-            "name" : "Timestamp",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "SectorId",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "X",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Y",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Z",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Interval",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "Battery",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          }, {
-            "name" : "IsMoving",
-            "expression" : {
-              "type" : "Reference",
-              "reference" : {
-                "type" : "Empty"
-              }
-            }
-          } ]
         } ],
         "parameters" : {
           "type" : "inline",
@@ -956,379 +729,21 @@
         "type" : "default"
       }
     }, {
-      "name" : "PopulateLocationsFromLookupMap_DuckDB",
-      "tags" : [ "i3XLocationTracker" ],
-      "inputStages" : [ "LocationsTableExists" ],
-      "stages" : [ {
-        "name" : "ToArrayAnd2ndLevel",
-        "display" : {
-          "position" : {
-            "x" : 1590,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "$spread(event.value).*"
-        },
-        "outputs" : [ "WriteLocations" ]
-      }, {
-        "name" : "LocationsTableExists",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "LocationsTableExists",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "Locations_DuckDB"
-          },
-          "handleGoodNoData" : true,
-          "goodNoDataOutputs" : [ "ReadLocations" ]
-        },
-        "outputs" : [ "DeleteFromLocations" ]
-      }, {
-        "name" : "DeleteFromLocations",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : -45
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "DeleteFromLocations",
-            "path" : "",
-            "params" : { },
-            "connectionName" : "Locations_DuckDB"
-          },
-          "handleGoodNoData" : true,
-          "goodNoDataOutputs" : [ "ReadLocations" ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ReadLocations",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "LookupMap",
-            "name" : "Locations",
-            "path" : ""
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "ToArrayAnd2ndLevel" ]
-      }, {
-        "name" : "WriteLocations",
-        "display" : {
-          "position" : {
-            "x" : 2040,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.Locations_DuckDB}}",
-          "eventPath" : "",
-          "connectionType" : "jdbc",
-          "qualifier" : {
-            "table" : "Locations",
-            "writeType" : "insert",
-            "whereColumn" : "",
-            "logAsJSON" : false,
-            "createOption" : "off",
-            "tableCacheInterval" : {
-              "duration" : 1,
-              "units" : "Hours"
-            },
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "Return" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 2490,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      } ],
-      "trackActivity" : false,
-      "queueSize" : 10000,
-      "triggers" : [ {
-        "name" : "CallableTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : 67
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerCallable",
-          "enabled" : false,
-          "parameters" : {
-            "type" : "EmptyParameters"
-          }
-        }
-      }, {
-        "name" : "PolledTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : -67
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerPolled",
-          "enabled" : false,
-          "interval" : {
-            "duration" : 1,
-            "units" : "Days"
-          },
-          "mode" : "interval"
-        }
-      } ],
-      "errorHandler" : {
-        "type" : "default"
-      }
-    }, {
       "name" : "Site1AMR1",
       "tags" : [ "i3XLocationTracker" ],
       "inputStages" : [ "setMetadata" ],
       "stages" : [ {
-        "name" : "GetLocations",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ "Subpipeline" ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "Locations",
-            "path" : "",
-            "params" : {
-              "AltPathNumber" : "{{event.metadata.altPathNumber}}",
-              "Id" : "{{event.metadata.id}}"
-            },
-            "connectionName" : "Locations_SQLite"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "ForEach" ]
-      }, {
-        "name" : "ForEach",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : -292
-          },
-          "size" : {
-            "width" : 1950,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "EachLocation" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "Locations" ]
-      }, {
-        "name" : "MQTT",
-        "display" : {
-          "position" : {
-            "x" : 3690,
-            "y" : -142
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.i3XLocationTracker_MQTT}}",
-          "eventPath" : "",
-          "connectionType" : "mqtt",
-          "qualifier" : {
-            "topic" : "Site1/AMRs/{{event.metadata.object}}",
-            "qos" : 0,
-            "namedRoot" : false,
-            "retained" : true,
-            "breakupArrays" : false,
-            "type" : "Tag"
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "setMetadata",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// object\r\nstage.setMetadata(\"object\", \"AMR1\");\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "GetLocations" ]
-      }, {
         "name" : "Locations",
         "display" : {
           "position" : {
-            "x" : 3240,
-            "y" : -142
+            "x" : 1590,
+            "y" : -67
           }
         },
         "description" : "",
         "config" : {
           "type" : ".ModelConfig",
           "model" : "Locations",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "Object",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.metadata.object"
-            }
-          }, {
-            "name" : "Locations",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.value"
-            },
-            "attributes" : [ {
-              "name" : "Timestamp",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "SectorId",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "X",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Y",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Z",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Interval",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Battery",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "IsMoving",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            } ]
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "MQTT" ]
-      }, {
-        "name" : "Subpipeline",
-        "display" : {
-          "position" : {
-            "x" : 1965,
-            "y" : 142
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SubPipelineConfig",
-          "failureOutputs" : [ ],
-          "reference" : "{{Pipeline.PopulateLocationsFromLookupMap}}"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "LocationsDetail",
-        "display" : {
-          "position" : {
-            "x" : 1050,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "LocationsDetail",
           "objectName" : "",
           "initExpression" : "",
           "attributes" : [ {
@@ -1382,50 +797,13 @@
           } ],
           "expandArray" : false
         },
-        "outputs" : [ "Return" ]
-      }, {
-        "name" : "EachLocation",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".BreakupConfig",
-          "breakupType" : "array",
-          "depth" : 1
-        },
-        "outputs" : [ "LocationsLastId" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 1500,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
+        "outputs" : [ "MQTT" ]
       }, {
         "name" : "LocationsLastId",
         "display" : {
           "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
+            "x" : 1140,
+            "y" : -67
           }
         },
         "description" : "",
@@ -1433,7 +811,90 @@
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "state.pipeline.set(\"lastId\", event.value.Id);\r\n\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "LocationsDetail" ]
+        "outputs" : [ "Locations" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.i3XLocationTracker_MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "Site1/AMRs/{{event.metadata.object}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "type" : "Tag",
+            "filterList" : [ "_model", "_timestamp" ]
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "GetLocations",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ "Subpipeline" ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "Locations",
+            "path" : ".[0]",
+            "params" : {
+              "AltPathNumber" : "{{event.metadata.altPathNumber}}",
+              "Id" : "{{event.metadata.id}}"
+            },
+            "connectionName" : "Locations_SQLite"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "LocationsLastId" ]
+      }, {
+        "name" : "Subpipeline",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SubPipelineConfig",
+          "failureOutputs" : [ ],
+          "reference" : "{{Pipeline.PopulateLocationsFromLookupMap}}"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "setMetadata",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// object\r\nstage.setMetadata(\"object\", \"AMR1\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "GetLocations" ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
@@ -1464,114 +925,11 @@
       "tags" : [ "i3XLocationTracker" ],
       "inputStages" : [ "setMetadata" ],
       "stages" : [ {
-        "name" : "ForEach",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : -292
-          },
-          "size" : {
-            "width" : 1950,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "EachLocation" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "Locations" ]
-      }, {
-        "name" : "Locations",
-        "display" : {
-          "position" : {
-            "x" : 3240,
-            "y" : -142
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ModelConfig",
-          "model" : "Locations",
-          "objectName" : "",
-          "initExpression" : "",
-          "attributes" : [ {
-            "name" : "Object",
-            "expression" : {
-              "type" : "PipelineStageReference",
-              "stageReference" : "event.metadata.object"
-            }
-          }, {
-            "name" : "Locations",
-            "expression" : {
-              "type" : "JavaScript",
-              "expression" : "return event.value"
-            },
-            "attributes" : [ {
-              "name" : "Timestamp",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "SectorId",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "X",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Y",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Z",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Interval",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "Battery",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            }, {
-              "name" : "IsMoving",
-              "expression" : {
-                "type" : "JavaScript",
-                "expression" : ""
-              }
-            } ]
-          } ],
-          "expandArray" : false
-        },
-        "outputs" : [ "MQTT" ]
-      }, {
         "name" : "MQTT",
         "display" : {
           "position" : {
-            "x" : 3690,
-            "y" : -142
+            "x" : 2040,
+            "y" : -67
           }
         },
         "description" : "",
@@ -1587,10 +945,26 @@
             "namedRoot" : false,
             "retained" : true,
             "breakupArrays" : false,
-            "type" : "Tag"
+            "type" : "Tag",
+            "filterList" : [ "_model", "_timestamp" ]
           },
           "qualifierExpression" : "",
           "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Subpipeline",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SubPipelineConfig",
+          "failureOutputs" : [ ],
+          "reference" : "{{Pipeline.PopulateLocationsFromLookupMap}}"
         },
         "outputs" : [ ]
       }, {
@@ -1608,7 +982,7 @@
           "reference" : {
             "type" : "Input",
             "name" : "Locations",
-            "path" : "",
+            "path" : ".[0]",
             "params" : {
               "AltPathNumber" : "{{event.metadata.altPathNumber}}",
               "Id" : "{{event.metadata.id}}"
@@ -1618,86 +992,19 @@
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
         },
-        "outputs" : [ "ForEach" ]
-      }, {
-        "name" : "setMetadata",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// object\r\nstage.setMetadata(\"object\", \"AMR2\");\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "GetLocations" ]
-      }, {
-        "name" : "Subpipeline",
-        "display" : {
-          "position" : {
-            "x" : 1965,
-            "y" : 142
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SubPipelineConfig",
-          "failureOutputs" : [ ],
-          "reference" : "{{Pipeline.PopulateLocationsFromLookupMap}}"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "EachLocation",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".BreakupConfig",
-          "breakupType" : "array",
-          "depth" : 1
-        },
         "outputs" : [ "LocationsLastId" ]
       }, {
-        "name" : "LocationsLastId",
+        "name" : "Locations",
         "display" : {
           "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "state.pipeline.set(\"lastId\", event.value.Id);\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "LocationsDetail" ]
-      }, {
-        "name" : "LocationsDetail",
-        "display" : {
-          "position" : {
-            "x" : 1050,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
+            "x" : 1590,
+            "y" : -67
           }
         },
         "description" : "",
         "config" : {
           "type" : ".ModelConfig",
-          "model" : "LocationsDetail",
+          "model" : "Locations",
           "objectName" : "",
           "initExpression" : "",
           "attributes" : [ {
@@ -1751,23 +1058,35 @@
           } ],
           "expandArray" : false
         },
-        "outputs" : [ "Return" ]
+        "outputs" : [ "MQTT" ]
       }, {
-        "name" : "Return",
+        "name" : "setMetadata",
         "display" : {
           "position" : {
-            "x" : 1500,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEach"
+            "x" : 240,
+            "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".ReturnConfig"
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// object\r\nstage.setMetadata(\"object\", \"AMR2\");\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ ]
+        "outputs" : [ "GetLocations" ]
+      }, {
+        "name" : "LocationsLastId",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "state.pipeline.set(\"lastId\", event.value.Id);\r\n\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "Locations" ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
@@ -1967,52 +1286,7 @@
       "name" : "i3XLocationTracker"
     } ],
     "functions" : [ ],
-    "namespace" : [ {
-      "type" : "local",
-      "id" : "1b35be00-707d-455f-9b31-fceb807dba21",
-      "name" : "Site1",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "name" : "AMRs",
-      "parentNamespaceId" : "1b35be00-707d-455f-9b31-fceb807dba21",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "405155b8-700e-4930-b655-26a3581b2d8c",
-      "name" : "AMR1",
-      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR1"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "a9628484-e125-4dd3-889e-eb0a119a18c5",
-      "name" : "AMR2",
-      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR2"
-        }
-      }
-    } ],
+    "namespace" : [ ],
     "lookupMap" : [ {
       "name" : "Locations",
       "tags" : [ "i3XLocationTracker" ],
