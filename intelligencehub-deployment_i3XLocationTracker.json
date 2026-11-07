@@ -1793,6 +1793,175 @@
       "errorHandler" : {
         "type" : "default"
       }
+    }, {
+      "name" : "i3XWrites_MQTTTopic",
+      "tags" : [ "i3XLocationTracker" ],
+      "inputStages" : [ "SetElementIdAndTopicToMetadata" ],
+      "stages" : [ {
+        "name" : "GetCommand",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[0].value.value"
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SetElementIdAndTopicToMetadata",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"ElementId\", event.value[0].elementId);\r\nconst topic = event.value[0].elementId.replaceAll('.','/') + \"/Command\";\r\nstage.setMetadata(\"Topic\", topic);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "GetCommand" ]
+      }, {
+        "name" : "Success",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WriteResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].elementId"
+            }
+          }, {
+            "name" : "success",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            },
+            "defaultValue" : true
+          }, {
+            "name" : "message",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ "Failure" ],
+          "connectionReference" : "{{Connection.i3XLocationTracker_MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "{{event.metadata.Topic}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "filterList" : [ "_timestamp" ]
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Success" ]
+      }, {
+        "name" : "Failure",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "WriteResults",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "elementId",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : "event.value[0].elementId"
+            }
+          }, {
+            "name" : "success",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            },
+            "defaultValue" : false
+          }, {
+            "name" : "message",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            }
+          } ],
+          "expandArray" : true
+        },
+        "outputs" : [ "Return" ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
     } ],
     "tags" : [ {
       "name" : "i3XLocationTracker"
