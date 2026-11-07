@@ -289,7 +289,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Timestamp",
+              "path" : ".Timestamp",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -303,7 +303,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].SectorId",
+              "path" : ".SectorId",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -317,9 +317,9 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].X",
+              "path" : ".X",
               "params" : {
-                "Topic" : "{{this.Topic}}/Position"
+                "Topic" : "{{this.Topic}}"
               },
               "connectionName" : "i3XLocationTracker_MQTT"
             }
@@ -331,9 +331,9 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Y",
+              "path" : ".Y",
               "params" : {
-                "Topic" : "{{this.Topic}}/Position"
+                "Topic" : "{{this.Topic}}"
               },
               "connectionName" : "i3XLocationTracker_MQTT"
             }
@@ -345,7 +345,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Z",
+              "path" : ".Z",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -359,7 +359,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Interval",
+              "path" : ".Interval",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -373,7 +373,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Battery",
+              "path" : ".Battery",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -387,7 +387,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].IsMoving",
+              "path" : ".IsMoving",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -431,7 +431,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Timestamp",
+              "path" : ".Timestamp",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -445,7 +445,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].SectorId",
+              "path" : ".SectorId",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -487,7 +487,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Z",
+              "path" : ".Z",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -501,7 +501,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Interval",
+              "path" : ".Interval",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -515,7 +515,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].Battery",
+              "path" : ".Battery",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
@@ -529,7 +529,7 @@
             "reference" : {
               "type" : "Input",
               "name" : "Topic",
-              "path" : ".Locations[0].IsMoving",
+              "path" : ".IsMoving",
               "params" : {
                 "Topic" : "{{this.Topic}}"
               },
