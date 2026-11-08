@@ -69,7 +69,6 @@
         "cleanSession" : true,
         "ssl" : false,
         "redundantBrokers" : [ ],
-        "inputDiscovery" : "#",
         "maxInflight" : 1000,
         "mcpEnabled" : "enabled",
         "maxMessagesReceived" : 0
@@ -182,7 +181,7 @@
             "nullable" : false,
             "required" : false,
             "array" : false,
-            "defaultValue" : "",
+            "defaultValue" : "Site1/AMRs/AMR1",
             "internalType" : {
               "variant" : "String"
             }
