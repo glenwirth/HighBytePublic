@@ -715,6 +715,72 @@
         }
       }
     }, {
+      "name" : "CurrentValuesAssetAttributes",
+      "connection" : "PI",
+      "type" : "osisoft.afsdk",
+      "qualifier" : {
+        "type" : "asset",
+        "options" : {
+          "get" : "currentValue",
+          "includeMetaData" : false,
+          "includeChildren" : false,
+          "includeAttributes" : true,
+          "database" : "{{this.Database}}",
+          "query" : "Name:'{{this.Name}}' Parent: '{{this.Parent}}'",
+          "index" : false,
+          "indexWindow" : "",
+          "paging" : false,
+          "pageSize" : "10",
+          "startIndex" : "0"
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Database",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "ReactorsDemo",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Name",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "Plant",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Parent",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
       "name" : "MetadataAssetAttributes",
       "connection" : "PI",
       "type" : "osisoft.afsdk",
@@ -1223,6 +1289,272 @@
       "instances" : [ ]
     },
     "pipelines" : [ {
+      "name" : "CurrentValuesAssetAttributesToDuckDBSubpipeline",
+      "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to duckdb;",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "SetPiplineName" ],
+      "stages" : [ {
+        "name" : "CurrentValuesWithParent",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".MergeReadConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "inline",
+            "key" : "Source1",
+            "reference" : {
+              "type" : "Input",
+              "name" : "CurrentValuesAssetAttributes",
+              "path" : ".[0]",
+              "params" : {
+                "Database" : "{{event.metadata.Database}}",
+                "Name" : "{{event.value._name}}",
+                "Parent" : "{{event.metadata.parent}}"
+              },
+              "connectionName" : "PI"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "Flatten" ]
+      }, {
+        "name" : "Flatten",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".FlattenConfig",
+          "delimiter" : "_"
+        },
+        "outputs" : [ "ObjectToArray" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 5040,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ForEachKey",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "UpdateKeyNames" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "ArrayToObject" ]
+      }, {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetMetadata" ]
+      }, {
+        "name" : "ObjectToArray",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$spread(event.value)"
+        },
+        "outputs" : [ "ForEachKey" ]
+      }, {
+        "name" : "CurrentValuesNoParent",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".MergeReadConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "inline",
+            "key" : "Source1",
+            "reference" : {
+              "type" : "Input",
+              "name" : "CurrentValuesAssetAttributes",
+              "path" : ".[0]",
+              "params" : {
+                "Database" : "{{event.metadata.Database}}",
+                "Name" : "{{event.value._name}}",
+                "Parent" : null
+              },
+              "connectionName" : "PI"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "Flatten" ]
+      }, {
+        "name" : "SetPiplineName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetFileName" ]
+      }, {
+        "name" : "SetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "The Stage moves the asset information to metadata.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "HasParent" ]
+      }, {
+        "name" : "ArrayToObject",
+        "display" : {
+          "position" : {
+            "x" : 4590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$merge(event.value)"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "HasParent",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.parent != \"\")",
+            "outputs" : [ "CurrentValuesWithParent" ],
+            "description" : "NotEmpty"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "CurrentValuesNoParent" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ReturnForEachKey",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachKey"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "UpdateKeyNames",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachKey"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const [firstKey, firstValue] = Object.entries(event.value)[0];\r\nconst newKeyAndValue = {};\r\nnewKeyAndValue[firstKey.replaceAll(' ','_').replaceAll('|','_').replaceAll('.','_').replaceAll('(','_').replaceAll('/','_').replaceAll(')','_').replaceAll(')','_').replaceAll('%','_')] = firstValue;\r\nstage.setValue(newKeyAndValue);"
+        },
+        "outputs" : [ "ReturnForEachKey" ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
       "name" : "MetadataAssetAttributesToDuckDBParent",
       "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to duckdb;",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
@@ -1242,7 +1574,7 @@
         },
         "outputs" : [ "GetAssetChildren" ]
       }, {
-        "name" : "ForEachAsset",
+        "name" : "ForEachAssetAttributes",
         "display" : {
           "position" : {
             "x" : 1140,
@@ -1258,7 +1590,7 @@
         "config" : {
           "type" : ".ForEachLoopConfig",
           "failureOutputs" : [ ],
-          "loopOutputs" : [ "Subpipeline" ],
+          "loopOutputs" : [ "SubpipelineForEachAssetAttributes" ],
           "stageTimeout" : {
             "duration" : 30,
             "units" : "Minutes"
@@ -1291,7 +1623,7 @@
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
         },
-        "outputs" : [ "ForEachAsset" ]
+        "outputs" : [ "ForEachAssetSubpipelineCurrentValues", "ForEachAssetAttributes" ]
       }, {
         "name" : "ReturnAsset",
         "display" : {
@@ -1300,7 +1632,7 @@
             "y" : 150
           },
           "metadata" : {
-            "parent" : "ForEachAsset"
+            "parent" : "ForEachAssetAttributes"
           }
         },
         "description" : "",
@@ -1309,14 +1641,14 @@
         },
         "outputs" : [ ]
       }, {
-        "name" : "Subpipeline",
+        "name" : "SubpipelineForEachAssetAttributes",
         "display" : {
           "position" : {
             "x" : 150,
             "y" : 150
           },
           "metadata" : {
-            "parent" : "ForEachAsset"
+            "parent" : "ForEachAssetAttributes"
           }
         },
         "description" : "",
@@ -1326,8 +1658,92 @@
           "reference" : "{{Pipeline.MetadataAssetAttributesToDuckDBSubpipeline}}"
         },
         "outputs" : [ "ReturnAsset" ]
+      }, {
+        "name" : "ForEachAssetSubpipelineCurrentValues",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 270
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SubpipelineCurrentValues" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Minutes"
+          }
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "ReturnAssetSubpipelineCurrentValues",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAssetSubpipelineCurrentValues"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SubpipelineCurrentValues",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAssetSubpipelineCurrentValues"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SubPipelineConfig",
+          "failureOutputs" : [ ],
+          "reference" : "{{Pipeline.CurrentValuesAssetAttributesToDuckDBSubpipeline}}"
+        },
+        "outputs" : [ "ReturnAssetSubpipelineCurrentValues" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 2344,
+            "y" : 392
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "AssetCurrentValues",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
       } ],
-      "trackActivity" : false,
+      "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
         "name" : "CronTrigger",
