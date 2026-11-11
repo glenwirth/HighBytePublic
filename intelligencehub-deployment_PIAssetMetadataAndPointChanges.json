@@ -786,6 +786,83 @@
         }
       }
     }, {
+      "name" : "CurrentValuesAssetAttributesWithTemplate",
+      "connection" : "PI",
+      "type" : "osisoft.afsdk",
+      "qualifier" : {
+        "type" : "asset",
+        "options" : {
+          "get" : "currentValue",
+          "includeMetaData" : false,
+          "includeChildren" : false,
+          "includeAttributes" : true,
+          "database" : "{{this.Database}}",
+          "query" : "Name:'{{this.Name}}' Parent: '{{this.Parent}}' Template: '{{this.Template}}'",
+          "index" : false,
+          "indexWindow" : "",
+          "paging" : false,
+          "pageSize" : "10",
+          "startIndex" : "0",
+          "attributes" : [ ]
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Database",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "ReactorsDemo",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Name",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "Plant",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Parent",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Template",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
       "name" : "MetadataAssetAttributes",
       "connection" : "PI",
       "type" : "osisoft.afsdk",
@@ -1294,7 +1371,178 @@
       "instances" : [ ]
     },
     "pipelines" : [ {
-      "name" : "CurrentValuesAssetAttributesToMQTTSubpipeline",
+      "name" : "CurrentAssetValuesParentToMQTT",
+      "description" : "This Pipeline obtains asset attribute metadata from AVEVA PI System Asset Framework and models the data before publishing the data to duckdb;",
+      "tags" : [ "PIAssetMetadataAndPointChanges" ],
+      "inputStages" : [ "SetDatabaseTopAssetTemplateName" ],
+      "stages" : [ {
+        "name" : "SetDatabaseTopAssetTemplateName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"Database\", \"ReactorsDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"Plant\");\r\nstage.setMetadata(\"Template\", \"Line\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "GetAssetChildren" ]
+      }, {
+        "name" : "GetAssetChildren",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "This Stage reads the data from AVEVA PI System.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MetadataAssetChildren",
+            "path" : "",
+            "params" : {
+              "Database" : "{{event.metadata.Database}}",
+              "TopAssetName" : "{{event.metadata.TopAssetName}}",
+              "Parent" : null
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEachAssetSubpipelineCurrentValues" ]
+      }, {
+        "name" : "ForEachAssetSubpipelineCurrentValues",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SubpipelineCurrentValues" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Minutes"
+          }
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 2340,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "AssetCurrentValues",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SubpipelineCurrentValues",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAssetSubpipelineCurrentValues"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SubPipelineConfig",
+          "failureOutputs" : [ ],
+          "reference" : "{{Pipeline.CurrentAssetValuesSubpipeline}}"
+        },
+        "outputs" : [ "ReturnAssetSubpipelineCurrentValues" ]
+      }, {
+        "name" : "ReturnAssetSubpipelineCurrentValues",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAssetSubpipelineCurrentValues"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
+          "interval" : {
+            "duration" : 36,
+            "units" : "Days"
+          },
+          "mode" : "interval"
+        }
+      }, {
+        "name" : "CronTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCron",
+          "enabled" : true,
+          "logging" : "on",
+          "schedule" : "0 0 * * *",
+          "timezone" : "local"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "CurrentAssetValuesSubpipeline",
       "description" : "This Pipeline obtains asset current point values from AVEVA PI System Asset Framework and models the data before publishing the data to MQTT;",
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetMetadata" ],
@@ -1309,18 +1557,19 @@
         "description" : "",
         "config" : {
           "type" : ".MergeReadConfig",
-          "failureOutputs" : [ ],
+          "failureOutputs" : [ "Flatten" ],
           "keyReferences" : [ {
             "location" : "inline",
             "key" : "Source1",
             "reference" : {
               "type" : "Input",
-              "name" : "CurrentValuesAssetAttributes",
+              "name" : "CurrentValuesAssetAttributesWithTemplate",
               "path" : ".[0]",
               "params" : {
                 "Database" : "{{event.metadata.Database}}",
                 "Name" : "{{event.value._name}}",
-                "Parent" : null
+                "Parent" : null,
+                "Template" : "{{event.metadata.Template}}"
               },
               "connectionName" : "PI"
             }
@@ -1420,18 +1669,19 @@
         "description" : "",
         "config" : {
           "type" : ".MergeReadConfig",
-          "failureOutputs" : [ ],
+          "failureOutputs" : [ "Flatten" ],
           "keyReferences" : [ {
             "location" : "inline",
             "key" : "Source1",
             "reference" : {
               "type" : "Input",
-              "name" : "CurrentValuesAssetAttributes",
+              "name" : "CurrentValuesAssetAttributesWithTemplate",
               "path" : ".[0]",
               "params" : {
                 "Database" : "{{event.metadata.Database}}",
                 "Name" : "{{event.value._name}}",
-                "Parent" : "{{event.metadata.parent}}"
+                "Parent" : "{{event.metadata.parent}}",
+                "Template" : "{{event.metadata.Template}}"
               },
               "connectionName" : "PI"
             }
@@ -1551,30 +1801,6 @@
         },
         "outputs" : [ "GetAssetChildren" ]
       }, {
-        "name" : "ForEachAssetAttributes",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : -150
-          },
-          "size" : {
-            "width" : 1050,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SubpipelineForEachAssetAttributes" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Minutes"
-          }
-        },
-        "outputs" : [ ]
-      }, {
         "name" : "GetAssetChildren",
         "display" : {
           "position" : {
@@ -1600,21 +1826,29 @@
           "handleGoodNoData" : false,
           "goodNoDataOutputs" : [ ]
         },
-        "outputs" : [ "ForEachAssetSubpipelineCurrentValues", "ForEachAssetAttributes" ]
+        "outputs" : [ "ForEachAssetAttributes" ]
       }, {
-        "name" : "ReturnAsset",
+        "name" : "ForEachAssetAttributes",
         "display" : {
           "position" : {
-            "x" : 600,
-            "y" : 150
+            "x" : 1140,
+            "y" : -150
           },
-          "metadata" : {
-            "parent" : "ForEachAssetAttributes"
-          }
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
         },
         "description" : "",
         "config" : {
-          "type" : ".ReturnConfig"
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SubpipelineForEachAssetAttributes" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Minutes"
+          }
         },
         "outputs" : [ ]
       }, {
@@ -1636,38 +1870,14 @@
         },
         "outputs" : [ "ReturnAsset" ]
       }, {
-        "name" : "ForEachAssetSubpipelineCurrentValues",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : 270
-          },
-          "size" : {
-            "width" : 1050,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "SubpipelineCurrentValues" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Minutes"
-          }
-        },
-        "outputs" : [ "MQTT" ]
-      }, {
-        "name" : "ReturnAssetSubpipelineCurrentValues",
+        "name" : "ReturnAsset",
         "display" : {
           "position" : {
             "x" : 600,
             "y" : 150
           },
           "metadata" : {
-            "parent" : "ForEachAssetSubpipelineCurrentValues"
+            "parent" : "ForEachAssetAttributes"
           }
         },
         "description" : "",
@@ -1675,75 +1885,15 @@
           "type" : ".ReturnConfig"
         },
         "outputs" : [ ]
-      }, {
-        "name" : "SubpipelineCurrentValues",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEachAssetSubpipelineCurrentValues"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SubPipelineConfig",
-          "failureOutputs" : [ ],
-          "reference" : "{{Pipeline.CurrentValuesAssetAttributesToMQTTSubpipeline}}"
-        },
-        "outputs" : [ "ReturnAssetSubpipelineCurrentValues" ]
-      }, {
-        "name" : "MQTT",
-        "display" : {
-          "position" : {
-            "x" : 2344,
-            "y" : 392
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.MQTT}}",
-          "eventPath" : "",
-          "connectionType" : "mqtt",
-          "qualifier" : {
-            "topic" : "AssetCurrentValues",
-            "qos" : 0,
-            "namedRoot" : false,
-            "retained" : true,
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ ]
       } ],
       "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
-        "name" : "CronTrigger",
-        "display" : {
-          "position" : {
-            "x" : -454,
-            "y" : -3
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerCron",
-          "enabled" : true,
-          "logging" : "on",
-          "schedule" : "0 0 * * *",
-          "timezone" : "local"
-        }
-      }, {
         "name" : "PolledTrigger",
         "display" : {
           "position" : {
-            "x" : -454,
-            "y" : 287
+            "x" : -450,
+            "y" : 67
           }
         },
         "description" : "",
@@ -1755,6 +1905,22 @@
             "units" : "Days"
           },
           "mode" : "interval"
+        }
+      }, {
+        "name" : "CronTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCron",
+          "enabled" : true,
+          "logging" : "on",
+          "schedule" : "0 0 * * *",
+          "timezone" : "local"
         }
       } ],
       "errorHandler" : {
