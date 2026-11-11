@@ -9,68 +9,6 @@
   "project" : {
     "version" : 15,
     "connections" : [ {
-      "name" : "DestLookupFailure",
-      "uri" : "file://TestFileConnection",
-      "tags" : [ "LookupDest", "PIAssetMetadataAndPointChanges" ],
-      "writes" : {
-        "flattenModeledValues" : false
-      },
-      "writeThrottle" : {
-        "enabled" : false,
-        "maxBatchSizePerTarget" : 1000,
-        "batchDelay" : {
-          "duration" : 20,
-          "units" : "Milliseconds"
-        }
-      },
-      "subscriptions" : { },
-      "storeForward" : {
-        "enabled" : false,
-        "maxEntries" : 100,
-        "waitOnFailureInterval" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "settings" : {
-        "communicationProtocol" : {
-          "type" : "FILE_PROTOCOL",
-          "options" : { }
-        },
-        "directory" : "C:\\Temp\\File3"
-      }
-    }, {
-      "name" : "DestLookupSuccess",
-      "uri" : "file://TestFileConnection",
-      "tags" : [ "LookupDest", "PIAssetMetadataAndPointChanges" ],
-      "writes" : {
-        "flattenModeledValues" : false
-      },
-      "writeThrottle" : {
-        "enabled" : false,
-        "maxBatchSizePerTarget" : 1000,
-        "batchDelay" : {
-          "duration" : 20,
-          "units" : "Milliseconds"
-        }
-      },
-      "subscriptions" : { },
-      "storeForward" : {
-        "enabled" : false,
-        "maxEntries" : 100,
-        "waitOnFailureInterval" : {
-          "duration" : 1,
-          "units" : "Seconds"
-        }
-      },
-      "settings" : {
-        "communicationProtocol" : {
-          "type" : "FILE_PROTOCOL",
-          "options" : { }
-        },
-        "directory" : "C:\\Temp\\File1"
-      }
-    }, {
       "name" : "DuckDB",
       "uri" : "jdbc://localhost:443",
       "description" : "This Connection enables the query of local parquet files and supports the PI Point historical backfill solution.",
@@ -226,48 +164,6 @@
     } ],
     "conditions" : [ ],
     "inputs" : [ {
-      "name" : "Test",
-      "connection" : "DestLookupFailure",
-      "type" : "file",
-      "qualifier" : {
-        "type" : "File",
-        "searchType" : "filePathSearch",
-        "encoding" : "Auto",
-        "path" : "Test.json",
-        "indexFile" : false
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
-      "name" : "Test",
-      "connection" : "DestLookupSuccess",
-      "type" : "file",
-      "qualifier" : {
-        "type" : "File",
-        "searchType" : "filePathSearch",
-        "encoding" : "Auto",
-        "path" : "Test.json",
-        "indexFile" : false
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "EmptyParameters"
-      }
-    }, {
       "name" : "AssetMetadataOrderByIdWithLimitAndOffset",
       "connection" : "DuckDB",
       "type" : "jdbc",
