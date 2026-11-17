@@ -1,0 +1,1744 @@
+{
+  "productInfo" : {
+    "company" : "HighByte",
+    "product" : "IntelligenceHub",
+    "version" : "4.5.5",
+    "build" : "2026.11.3.3",
+    "stage" : "Release"
+  },
+  "project" : {
+    "version" : 15,
+    "connections" : [ {
+      "name" : "MsiMessages",
+      "uri" : "jdbc.sqlite://sQLite",
+      "tags" : [ "PAS_X_MSI" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "database" : "..\\appData\\MsiMessages.db",
+        "strategy" : {
+          "type" : "default"
+        }
+      }
+    }, {
+      "name" : "MsiRESTClient",
+      "uri" : "rest.client://MSIRestClient",
+      "tags" : [ "PAS_X_MSI" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "authentication" : {
+          "type" : "OAuth 2.0",
+          "options" : {
+            "grantType" : "password",
+            "clientAuthenticationType" : "header",
+            "loginURL" : "http://localhost:9000/getAccessToken",
+            "username" : "user",
+            "password" : {
+              "type" : "Encrypted",
+              "value" : {
+                "keyId" : "oIqFVEWyRpXE+1JXkyif8A==",
+                "iv" : "x2nAid/Jo0BPB+Ex4VBeHQ==",
+                "ciphertext" : "2oDUf9DmXWFjj6nAyTv6mQ=="
+              }
+            }
+          }
+        },
+        "baseURL" : "http://localhost:9000"
+      }
+    } ],
+    "conditions" : [ ],
+    "inputs" : [ {
+      "name" : "ClosedOrderParameterMessages",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from Messages where Status = 'Closed'",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "DeleteAllMessages",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "delete from Messages",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "DeleteOrderParameterMessages",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "delete from Messages where _id = {{this._id}}",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "_id",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "{{this._id}}",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "DropMessagesTable",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "drop table Messages",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "ErrorOrderParameterMessages",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from Messages where status = 'Error'",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "InProcessOrderParameterMessages",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from Messages where Status = 'Inprocess' ORDER BY _timestamp ",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "OpenOrderParameterMessage",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from Messages where Status = 'Open' ORDER BY _timestamp LIMIT 1",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "SelectAllMessages",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from Messages",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "UpdateAllMessagesToOpen",
+      "connection" : "MsiMessages",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "Update Messages set status = 'Open'",
+        "type" : "Tag"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    } ],
+    "outputs" : [ {
+      "name" : "PostMessage",
+      "connection" : "MsiRESTClient",
+      "type" : "rest.client",
+      "qualifier" : {
+        "method" : "POST",
+        "bodyType" : "raw",
+        "breakupArrays" : false,
+        "endpointURL" : "/PostMessage",
+        "template" : "${value[1..value?length - 2]}",
+        "header" : [ {
+          "name" : "Content-Type",
+          "value" : "application/xml"
+        } ],
+        "type" : "Tag"
+      }
+    } ],
+    "modeling" : {
+      "models" : [ {
+        "name" : "MsiMessageContainer_MsiOrderParameterMessage",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Object",
+          "name" : "MsiMessageContainer",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "messageInstanceId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "direction",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "systemId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "messageType",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "messageContext",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Modeled",
+            "name" : "message",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "model" : "MsiOrderParameterMessage"
+          } ]
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "MsiOrderParameterMessage",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Object",
+          "name" : "MsiOrderParameterMessage",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "messageInstanceId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "direction",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "messageId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "supplierId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "deviceTypeId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "supplierVersion",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Real64"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "functionalId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "orderContext",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "creationTime",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "parameter",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Modeled",
+            "name" : "BatchNo",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "model" : "ParameterString"
+          }, {
+            "attributeType" : "Modeled",
+            "name" : "DeviceNo",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "model" : "ParameterString"
+          }, {
+            "attributeType" : "Modeled",
+            "name" : "Weight",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "model" : "ParameterDouble"
+          } ]
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "ParameterBoolean",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "name",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "dataType",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : "Boolean",
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Boolean"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "isQualifier",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "acquisitionTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : "2026-01-01 00:00:00,000",
+          "internalType" : {
+            "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "ParameterDateTime",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "name",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "dataType",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "DateTime"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "isQualifier",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Boolean"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "acquisitionTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "ParameterDouble",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "name",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "dataType",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : "Double",
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Real32"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "isQualifier",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "acquisitionTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : "2026-01-01 00:00:00,000",
+          "internalType" : {
+            "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "ParameterFloat",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "name",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "dataType",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Real32"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "isQualifier",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "acquisitionTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "ParameterLong",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "name",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "dataType",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : "Long",
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Int64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "isQualifier",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "acquisitionTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : "2026-01-01 00:00:00,000",
+          "internalType" : {
+            "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "ParameterString",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "name",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "dataType",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "isQualifier",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "acquisitionTime",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "TransferResult",
+        "tags" : [ "PAS_X_MSI" ],
+        "attributes" : [ {
+          "attributeType" : "Object",
+          "name" : "TransferResult",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "MsgInstanceId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Any"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "SystemId",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Success",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "Boolean"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Error",
+            "nullable" : true,
+            "required" : false,
+            "array" : false,
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ]
+        } ],
+        "modelVersion" : ""
+      } ],
+      "instances" : [ ]
+    },
+    "pipelines" : [ {
+      "name" : "DeleteClosedOrderParameterMessages",
+      "description" : "Deletes messages whose current state is 'Closed'.",
+      "tags" : [ "PAS_X_MSI" ],
+      "inputStages" : [ "Read" ],
+      "stages" : [ {
+        "name" : "Read",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "ReadClosedMessages",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "ClosedOrderParameterMessages",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "MsiMessages"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : -105
+          },
+          "size" : {
+            "width" : 1000,
+            "height" : 300
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "DeleteMessages" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "DeleteMessages",
+        "display" : {
+          "position" : {
+            "x" : 200,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "Delete by _id.  Merge read used to keep original message to run a single object.",
+        "config" : {
+          "type" : ".MergeReadConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "inline",
+            "key" : "Delete",
+            "reference" : {
+              "type" : "Input",
+              "name" : "DeleteOrderParameterMessages",
+              "path" : "",
+              "params" : {
+                "_id" : "{{event.value._id}}"
+              },
+              "connectionName" : "MsiMessages"
+            }
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 650,
+            "y" : 105
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CronTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCron",
+          "enabled" : true,
+          "logging" : "off",
+          "schedule" : "*/30 * * * *",
+          "timezone" : "utc"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "ProcessMSIRequestAndPublishResult",
+      "description" : "Query open messages, process them and send them to Pas-X.",
+      "tags" : [ "PAS_X_MSI" ],
+      "inputStages" : [ "OpenMessages" ],
+      "stages" : [ {
+        "name" : "Filter",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "Preserve values in metadata.",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "_id"
+          }, {
+            "filterType" : "exactPathFilter",
+            "filterText" : "_name"
+          }, {
+            "filterType" : "exactPathFilter",
+            "filterText" : "_timestamp"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "filtered"
+        },
+        "outputs" : [ "StringToObject", "InprocessStatus" ]
+      }, {
+        "name" : "MsiMessageContainer",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : -67
+          }
+        },
+        "description" : "Push model to metata.",
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ {
+            "filterType" : "exactPathFilter",
+            "filterText" : "MsiMessageContainer"
+          } ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "message"
+        },
+        "outputs" : [ "Weight" ]
+      }, {
+        "name" : "WithUpdatedParameters",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : -67
+          }
+        },
+        "description" : "Map array of parameters into the parameters key.",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "MsiMessageContainer_MsiOrderParameterMessage",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "MsiMessageContainer",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.metadata.message.MsiMessageContainer;"
+            },
+            "attributes" : [ {
+              "name" : "messageInstanceId",
+              "expression" : {
+                "type" : "PipelineStageReference",
+                "stageReference" : ""
+              }
+            }, {
+              "name" : "direction",
+              "expression" : {
+                "type" : "PipelineStageReference",
+                "stageReference" : ""
+              }
+            }, {
+              "name" : "systemId",
+              "expression" : {
+                "type" : "PipelineStageReference",
+                "stageReference" : ""
+              }
+            }, {
+              "name" : "messageType",
+              "expression" : {
+                "type" : "PipelineStageReference",
+                "stageReference" : ""
+              }
+            }, {
+              "name" : "messageContext",
+              "expression" : {
+                "type" : "PipelineStageReference",
+                "stageReference" : ""
+              }
+            }, {
+              "name" : "message",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.message.MsiMessageContainer.message;"
+              },
+              "attributes" : [ {
+                "name" : "MsiOrderParameterMessage",
+                "expression" : {
+                  "type" : "JavaScript",
+                  "expression" : "return event.metadata.message.MsiMessageContainer.message.MsiOrderParameterMessage;"
+                },
+                "attributes" : [ {
+                  "name" : "messageInstanceId",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "direction",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "messageId",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "supplierId",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "deviceTypeId",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "supplierVersion",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "functionalId",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "orderContext",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "creationTime",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  }
+                }, {
+                  "name" : "parameter",
+                  "expression" : {
+                    "type" : "JavaScript",
+                    "expression" : "return event.value;"
+                  }
+                }, {
+                  "name" : "BatchNo",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  },
+                  "attributes" : [ {
+                    "name" : "name",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "dataType",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "value",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "isQualifier",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "acquisitionTime",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  } ]
+                }, {
+                  "name" : "DeviceNo",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  },
+                  "attributes" : [ {
+                    "name" : "name",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "dataType",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "value",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "isQualifier",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "acquisitionTime",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  } ]
+                }, {
+                  "name" : "Weight",
+                  "expression" : {
+                    "type" : "PipelineStageReference",
+                    "stageReference" : ""
+                  },
+                  "attributes" : [ {
+                    "name" : "name",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "dataType",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "value",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "isQualifier",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  }, {
+                    "name" : "acquisitionTime",
+                    "expression" : {
+                      "type" : "PipelineStageReference",
+                      "stageReference" : ""
+                    }
+                  } ]
+                } ]
+              } ]
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "XMLFormat" ]
+      }, {
+        "name" : "XMLFormat",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : -67
+          }
+        },
+        "description" : "Convert JSON to XML",
+        "config" : {
+          "type" : ".XMLFormatConfig",
+          "outgoingType" : "String"
+        },
+        "outputs" : [ "PostMessage" ]
+      }, {
+        "name" : "SQLite",
+        "display" : {
+          "position" : {
+            "x" : 4740,
+            "y" : 0
+          }
+        },
+        "description" : "Update status in SQLite",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.MsiMessages}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "table" : "Messages",
+            "writeType" : "update",
+            "whereColumn" : "_id = {{event.metadata.filtered._id}}",
+            "logAsJSON" : false,
+            "createOption" : "off",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false,
+            "type" : "Tag"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Weight",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "ParameterDouble",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "name",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return \"Weight\";"
+            }
+          }, {
+            "name" : "dataType",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return \"Double\";"
+            }
+          }, {
+            "name" : "value",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return Math.random() * 10;"
+            }
+          }, {
+            "name" : "isQualifier",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return true;\r\n"
+            }
+          }, {
+            "name" : "acquisitionTime",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "const date = new Date();\r\nconst pad = (n) => (n < 10 ? '0' + n : n); // Helper function for padding\r\n\r\nconst formattedDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())},${date.getMilliseconds()}`\r\n\r\nreturn formattedDate;"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "AddWeightToParameters" ]
+      }, {
+        "name" : "OpenMessages",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "Get open orders from SQLite.   Limit parameter provides number of rows to return.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "OpenOrderParameterMessage",
+            "path" : ".[0]",
+            "params" : {
+              "Limit" : null
+            },
+            "connectionName" : "MsiMessages"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "Filter" ]
+      }, {
+        "name" : "InprocessStatus",
+        "display" : {
+          "position" : {
+            "x" : 4290,
+            "y" : 135
+          }
+        },
+        "description" : "Set status to Inprocess",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const status = { \"status\": \"Inprocess\" };\r\nstage.setValue(status);"
+        },
+        "outputs" : [ "SQLite" ]
+      }, {
+        "name" : "ErrorStatus",
+        "display" : {
+          "position" : {
+            "x" : 4290,
+            "y" : 0
+          }
+        },
+        "description" : "Set status to Error and provide error message from PostMessage.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const status = { \"status\": \"Error\" };\r\nconst errorMessage = { \"errorMessage\": event.metadata.writeResults[0] }\r\nlet payload = {...status,...errorMessage};\r\nstage.setValue(payload);"
+        },
+        "outputs" : [ "SQLite" ]
+      }, {
+        "name" : "PostMessage",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : -67
+          }
+        },
+        "description" : "Post to MSI",
+        "config" : {
+          "type" : ".WriteConfig",
+          "failureOutputs" : [ "ErrorStatus" ],
+          "references" : [ "{{Connection.MsiRESTClient.PostMessage}}" ],
+          "eventPath" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "ClosedStatus" ]
+      }, {
+        "name" : "StringToObject",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$eval(event.value.message)"
+        },
+        "outputs" : [ "MsiMessageContainer" ]
+      }, {
+        "name" : "AddWeightToParameters",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : -67
+          }
+        },
+        "description" : "Get MsiOrderParameterMessage from metadata and separate them into an array.",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$append(event.metadata.message.MsiMessageContainer.message.MsiOrderParameterMessage.parameter, event.value)"
+        },
+        "outputs" : [ "WithUpdatedParameters" ]
+      }, {
+        "name" : "ClosedStatus",
+        "display" : {
+          "position" : {
+            "x" : 4290,
+            "y" : -135
+          }
+        },
+        "description" : "Set status to Closed",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const status = { \"status\": \"Closed\" };\r\nstage.setValue(status);"
+        },
+        "outputs" : [ "SQLite" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : false,
+          "interval" : {
+            "duration" : 5,
+            "units" : "Seconds"
+          },
+          "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "ReceiveMSIRequestAndSendAcknowledge",
+      "description" : "Capture Request From MSI.  Save message into SQLite.  Reply with acknowledgement.",
+      "tags" : [ "PAS_X_MSI" ],
+      "inputStages" : [ "XMLParser" ],
+      "stages" : [ {
+        "name" : "XMLParser",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "Parse incoming XML message string into structured JSON object for processing.",
+        "config" : {
+          "type" : ".XMLParserConfig",
+          "failureOutputs" : [ ],
+          "incomingType" : "String",
+          "encoding" : "Auto"
+        },
+        "outputs" : [ "ObjectToString" ]
+      }, {
+        "name" : "ObjectToString",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "Wrap the parsed XML object into a message envelope by converting the entire structure to a JSON string.",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n  \"message\": $string(event.value)\r\n}"
+        },
+        "outputs" : [ "AddOpenStatusUpdate" ]
+      }, {
+        "name" : "AddOpenStatusUpdate",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "Add status field set to 'Open' to track message processing state in the database.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const status = { \"status\": \"Open\" };\r\nlet payload = {...event.value,...status};\r\nstage.setValue(payload);"
+        },
+        "outputs" : [ "MessageInsert" ]
+      }, {
+        "name" : "MessageInsert",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "Insert message record into SQLite Messages table. Routes to success or error response based on write result.",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ "TransferResultError" ],
+          "connectionReference" : "{{Connection.MsiMessages}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc.sqlite",
+          "qualifier" : {
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false,
+            "writeType" : "insert",
+            "logAsJSON" : false,
+            "type" : "Tag",
+            "table" : "Messages",
+            "whereColumn" : "",
+            "createOption" : "create_and_update"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "TransferResultSuccess" ]
+      }, {
+        "name" : "TransferResultSuccess",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : -67
+          }
+        },
+        "description" : "Construct success acknowledgement response with message metadata (messageInstanceId, systemId) and Success=true.",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "TransferResult",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "TransferResult",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            },
+            "attributes" : [ {
+              "name" : "MsgInstanceId",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.message.MsiMessageContainer.messageInstanceId;"
+              }
+            }, {
+              "name" : "SystemId",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.message.MsiMessageContainer.systemId;"
+              }
+            }, {
+              "name" : "Success",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return true"
+              }
+            }, {
+              "name" : "Error",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "XMLFormat" ]
+      }, {
+        "name" : "TransferResultError",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 67
+          }
+        },
+        "description" : "Construct error acknowledgement response with message metadata and database error details from failed write operation.",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "TransferResult",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "TransferResult",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            },
+            "attributes" : [ {
+              "name" : "MsgInstanceId",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.message.MsiMessageContainer.messageInstanceId;"
+              }
+            }, {
+              "name" : "SystemId",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.message.MsiMessageContainer.systemId;"
+              }
+            }, {
+              "name" : "Success",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return false;"
+              }
+            }, {
+              "name" : "Error",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : "return event.metadata.writeResults[0];"
+              }
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "XMLFormat" ]
+      }, {
+        "name" : "XMLFormat",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "description" : "Convert TransferResult JSON object to XML string format for API response.",
+        "config" : {
+          "type" : ".XMLFormatConfig",
+          "outgoingType" : "String"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "description" : "Return XML acknowledgement response to the API caller.",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "ApiTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "HTTP/MCP API endpoint that receives incoming MSI message requests.",
+        "config" : {
+          "type" : ".TriggerApi",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    } ],
+    "tags" : [ {
+      "name" : "PAS_X_MSI"
+    } ],
+    "functions" : [ ],
+    "namespace" : [ ],
+    "lookupMap" : [ ],
+    "servers" : {
+      "i3x" : {
+        "historyReadPipeline" : {
+          "type" : "Empty"
+        },
+        "writePipeline" : {
+          "type" : "Empty"
+        }
+      }
+    }
+  },
+  "network" : {
+    "version" : 0,
+    "groups" : [ {
+      "name" : "TEst",
+      "token" : "5NxhJXaoyEKSrw6v8BQftDlfjxygCkiw"
+    } ],
+    "hubs" : [ ]
+  },
+  "remoteConfig" : {
+    "remoteUrl" : "",
+    "token" : "",
+    "clientId" : "f2eba9c2-c76e-4a35-a630-792551bbb071",
+    "name" : "",
+    "features" : {
+      "centralConfig" : true,
+      "centralData" : false
+    },
+    "requestTimeoutSeconds" : 5,
+    "heartbeatIntervalSeconds" : 10
+  },
+  "identityProviders" : { }
+}
