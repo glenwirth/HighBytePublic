@@ -2,8 +2,8 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.4",
-    "build" : "2026.10.22.1",
+    "version" : "4.5.5",
+    "build" : "2026.11.3.3",
     "stage" : "Release"
   },
   "project" : {
@@ -61,8 +61,8 @@
       },
       "subscriptions" : {
         "subscriptionRate" : {
-          "duration" : 1,
-          "units" : "Seconds"
+          "duration" : 500,
+          "units" : "Milliseconds"
         }
       },
       "storeForward" : {
@@ -362,14 +362,14 @@
         "name" : "PolledTrigger",
         "display" : {
           "position" : {
-            "x" : -431,
-            "y" : 165
+            "x" : -446,
+            "y" : 161
           }
         },
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 1,
             "units" : "Seconds"
@@ -438,5 +438,6 @@
     },
     "requestTimeoutSeconds" : 5,
     "heartbeatIntervalSeconds" : 10
-  }
+  },
+  "identityProviders" : { }
 }
