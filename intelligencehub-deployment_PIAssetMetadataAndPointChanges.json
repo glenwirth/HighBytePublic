@@ -9,6 +9,68 @@
   "project" : {
     "version" : 15,
     "connections" : [ {
+      "name" : "DestLookupFailure",
+      "uri" : "file://TestFileConnection",
+      "tags" : [ "LookupDest", "PIAssetMetadataAndPointChanges" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "communicationProtocol" : {
+          "type" : "FILE_PROTOCOL",
+          "options" : { }
+        },
+        "directory" : "C:\\Temp\\File3"
+      }
+    }, {
+      "name" : "DestLookupSuccess",
+      "uri" : "file://TestFileConnection",
+      "tags" : [ "LookupDest", "PIAssetMetadataAndPointChanges" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "communicationProtocol" : {
+          "type" : "FILE_PROTOCOL",
+          "options" : { }
+        },
+        "directory" : "C:\\Temp\\File1"
+      }
+    }, {
       "name" : "DuckDB",
       "uri" : "jdbc://localhost:443",
       "description" : "This Connection enables the query of local parquet files and supports the PI Point historical backfill solution.",
@@ -164,6 +226,48 @@
     } ],
     "conditions" : [ ],
     "inputs" : [ {
+      "name" : "Test",
+      "connection" : "DestLookupFailure",
+      "type" : "file",
+      "qualifier" : {
+        "type" : "File",
+        "searchType" : "filePathSearch",
+        "encoding" : "Auto",
+        "path" : "Test.json",
+        "indexFile" : false
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "Test",
+      "connection" : "DestLookupSuccess",
+      "type" : "file",
+      "qualifier" : {
+        "type" : "File",
+        "searchType" : "filePathSearch",
+        "encoding" : "Auto",
+        "path" : "Test.json",
+        "indexFile" : false
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
       "name" : "AssetMetadataOrderByIdWithLimitAndOffset",
       "connection" : "DuckDB",
       "type" : "jdbc",
@@ -330,6 +434,28 @@
         "type" : "EmptyParameters"
       }
     }, {
+      "name" : "CreateAssetMetadataStaging",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "CREATE TABLE IF NOT EXISTS AssetMetadataStaging (\n    assetMetadataKey             VARCHAR     NOT NULL,\n    assetId              VARCHAR     NOT NULL,\n    assetName              VARCHAR     NOT NULL,\n    assetPath            VARCHAR,\n    attributeId          VARCHAR     NOT NULL,\n    attributeName        VARCHAR,\n    attributeDescription VARCHAR,\n    attributeDataType    VARCHAR,\n    attributeUnits       VARCHAR,\n    pointId              INTEGER,\n    pointName            VARCHAR,\n    source               VARCHAR,\n    PRIMARY KEY (assetMetadataKey)\n);\n\nCREATE INDEX IF NOT EXISTS idx_assetmetadatastaging_assetmetadatakey\n    ON AssetMetadataStaging ( assetMetadataKey);",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
       "name" : "CreateMissedPointChanges",
       "connection" : "DuckDB",
       "type" : "jdbc",
@@ -427,6 +553,44 @@
       "referenceMap" : [ ],
       "parameters" : {
         "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "InsertAssetMetadataStaging",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "-- Insert from Parquet\nINSERT INTO AssetMetadataStaging\nSELECT assetMetadataKey, assetId, assetName, assetPath, attributeId, attributeName, attributeDescription,\n       attributeDataType, attributeUnits, pointId, pointName,\n       source\nFROM read_parquet('{{this.FileName}}')",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "FileName",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "..//appData//MetadataAssetAttributesToDuckDBSubpipeline.parquet",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
       }
     }, {
       "name" : "MissedPointChanges",
@@ -734,11 +898,11 @@
         }
       }
     }, {
-      "name" : "TruncateAssetMetadata",
+      "name" : "TruncateAssetMetadataStaging",
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "Truncate Table AssetMetadata;",
+        "query" : "Truncate Table AssetMetadataStaging;",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -782,7 +946,7 @@
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "-- Upsert from Parquet\nINSERT INTO AssetMetadata\nSELECT nextval('asset_metadata_id_seq'), assetMetadataKey, assetId, assetName, assetPath, attributeId, attributeName, attributeDescription,\n       attributeDataType, attributeUnits, pointId, pointName,\n       source\nFROM read_parquet('{{this.FileName}}')\nQUALIFY row_number() OVER (PARTITION BY assetId, attributeId) = 1   -- dedupe source\nON CONFLICT (assetMetadataKey) DO UPDATE SET\n    assetId            = EXCLUDED.assetId,\n    assetName            = EXCLUDED.assetName,\n    assetPath            = EXCLUDED.assetPath,\n    attributeId            = EXCLUDED.attributeId,\n    attributeName        = EXCLUDED.attributeName,\n    attributeDescription = EXCLUDED.attributeDescription,\n    attributeDataType    = EXCLUDED.attributeDataType,\n    attributeUnits       = EXCLUDED.attributeUnits,\n    pointId              = EXCLUDED.pointID,\n    pointName            = EXCLUDED.pointName,\n    source               = EXCLUDED.source",
+        "query" : "-- Upsert from AssetMetadataStaging\nINSERT INTO AssetMetadata\nSELECT nextval('asset_metadata_id_seq'), assetMetadataKey, assetId, assetName, assetPath, attributeId, attributeName, attributeDescription,\n       attributeDataType, attributeUnits, pointId, pointName,\n       source\nFROM AssetMetadataStaging\nQUALIFY row_number() OVER (PARTITION BY assetMetadataKey) = 1   -- dedupe source\nON CONFLICT (assetMetadataKey) DO UPDATE SET\n    assetId            = EXCLUDED.assetId,\n    assetName            = EXCLUDED.assetName,\n    assetPath            = EXCLUDED.assetPath,\n    attributeId            = EXCLUDED.attributeId,\n    attributeName        = EXCLUDED.attributeName,\n    attributeDescription = EXCLUDED.attributeDescription,\n    attributeDataType    = EXCLUDED.attributeDataType,\n    attributeUnits       = EXCLUDED.attributeUnits,\n    pointId              = EXCLUDED.pointID,\n    pointName            = EXCLUDED.pointName,\n    source               = EXCLUDED.source",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -797,23 +961,7 @@
       },
       "referenceMap" : [ ],
       "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "FileName",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : "..//appData//MetadataAssetAttributesToDuckDBSubpipeline.parquet",
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
+        "type" : "EmptyParameters"
       }
     }, {
       "name" : "AssetChanges",
@@ -2345,10 +2493,65 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
+        "name" : "AssetAttributesWithParent",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : -67
+          }
+        },
+        "description" : "This Stage reads the data from AVEVA PI System.",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "MetadataAssetAttributes",
+            "path" : "",
+            "params" : {
+              "Database" : "{{event.metadata.Database}}",
+              "Name" : "{{event.value._name}}",
+              "Parent" : "{{event.metadata.parent}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "HasAttributes" ]
+      }, {
+        "name" : "AssetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "The Stage moves the asset information to metadata.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"assetName\", event.value._name);\r\nconst path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "HasParent" ]
+      }, {
+        "name" : "GetAttributes",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : -45
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[0].attributes"
+        },
+        "outputs" : [ "ArrayLengthGT0" ]
+      }, {
         "name" : "SetReturnToSingleObject",
         "display" : {
           "position" : {
-            "x" : 5490,
+            "x" : 5940,
             "y" : 75
           }
         },
@@ -2358,6 +2561,141 @@
           "transformExpression" : "{\r\n    \"return\": event.value\r\n}"
         },
         "outputs" : [ "Return" ]
+      }, {
+        "name" : "ArrayLengthGT0",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : -45
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "    return Boolean(event.value.length > 0)",
+            "outputs" : [ "ForEachAttribute" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "SetReturnToSingleObject" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "HasParent",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.parent != \"\")",
+            "outputs" : [ "AssetAttributesWithParent" ],
+            "description" : "NotEmpty"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "AssetAttributesNoParent" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "assetmetadatastaging",
+        "display" : {
+          "position" : {
+            "x" : 5490,
+            "y" : -165
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.Databricks_Zerobus}}",
+          "eventPath" : "",
+          "connectionType" : "databricks.zerobus",
+          "qualifier" : {
+            "createOption" : "off",
+            "breakupArrays" : false,
+            "catalog" : "workspace",
+            "schema" : "default",
+            "table" : "{{event.metadata.JustTableName}}"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "SetReturnToSingleObject" ]
+      }, {
+        "name" : "SetPiplineName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetFileName" ]
+      }, {
+        "name" : "ForEachAttribute",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : -315
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "ApplyModel" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "SetJustTable" ]
+      }, {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "AssetMetadata" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 6390,
+            "y" : 75
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
       }, {
         "name" : "AssetAttributesNoParent",
         "display" : {
@@ -2386,32 +2724,19 @@
         },
         "outputs" : [ "HasAttributes" ]
       }, {
-        "name" : "AssetAttributesWithParent",
+        "name" : "SetJustTable",
         "display" : {
           "position" : {
-            "x" : 2040,
-            "y" : -67
+            "x" : 5040,
+            "y" : -165
           }
         },
-        "description" : "This Stage reads the data from AVEVA PI System.",
+        "description" : "",
         "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "MetadataAssetAttributes",
-            "path" : "",
-            "params" : {
-              "Database" : "{{event.metadata.Database}}",
-              "Name" : "{{event.value._name}}",
-              "Parent" : "{{event.metadata.parent}}"
-            },
-            "connectionName" : "PI"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const justTableName = event.metadata.StagingTableName.replace('workspace.default.', '');\r\nstage.setMetadata(\"JustTableName\" , justTableName);\r\n\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "HasAttributes" ]
+        "outputs" : [ "assetmetadatastaging" ]
       }, {
         "name" : "HasAttributes",
         "display" : {
@@ -2434,169 +2759,6 @@
           } ]
         },
         "outputs" : [ ]
-      }, {
-        "name" : "ArrayLengthGT0",
-        "display" : {
-          "position" : {
-            "x" : 3390,
-            "y" : -45
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "    return Boolean(event.value.length > 0)",
-            "outputs" : [ "ForEachAttribute" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "SetReturnToSingleObject" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "AssetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : 0
-          }
-        },
-        "description" : "The Stage moves the asset information to metadata.",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"assetName\", event.value._name);\r\nconst path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "HasParent" ]
-      }, {
-        "name" : "assetmetadatastaging",
-        "display" : {
-          "position" : {
-            "x" : 5040,
-            "y" : -165
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.Databricks_Zerobus}}",
-          "eventPath" : "",
-          "connectionType" : "databricks.zerobus",
-          "qualifier" : {
-            "createOption" : "off",
-            "breakupArrays" : false,
-            "catalog" : "workspace",
-            "schema" : "default",
-            "table" : "{{event.metadata.JustTableName}}"
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "SetReturnToSingleObject" ]
-      }, {
-        "name" : "SetFileName",
-        "display" : {
-          "position" : {
-            "x" : 690,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "AssetMetadata" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 5940,
-            "y" : 75
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "SetPiplineName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SetFileName" ]
-      }, {
-        "name" : "HasParent",
-        "display" : {
-          "position" : {
-            "x" : 1590,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.parent != \"\")",
-            "outputs" : [ "AssetAttributesWithParent" ],
-            "description" : "NotEmpty"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "AssetAttributesNoParent" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ForEachAttribute",
-        "display" : {
-          "position" : {
-            "x" : 3840,
-            "y" : -315
-          },
-          "size" : {
-            "width" : 1050,
-            "height" : 390
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ForEachLoopConfig",
-          "failureOutputs" : [ ],
-          "loopOutputs" : [ "ApplyModel" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Seconds"
-          }
-        },
-        "outputs" : [ "SetJustTable" ]
-      }, {
-        "name" : "GetAttributes",
-        "display" : {
-          "position" : {
-            "x" : 2940,
-            "y" : -45
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value[0].attributes"
-        },
-        "outputs" : [ "ArrayLengthGT0" ]
       }, {
         "name" : "ReturnAttribute",
         "display" : {
@@ -2706,20 +2868,6 @@
           "expandArray" : false
         },
         "outputs" : [ "ReturnAttribute" ]
-      }, {
-        "name" : "SetJustTable",
-        "display" : {
-          "position" : {
-            "x" : 4949,
-            "y" : -335
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const justTableName = event.metadata.StagingTableName.replace('workspace.default.', '');\r\nstage.setMetadata(\"JustTableName\" , justTableName);\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "assetmetadatastaging" ]
       } ],
       "trackActivity" : true,
       "queueSize" : 10000,
@@ -2749,6 +2897,29 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetDatabaseAndTopAssetName" ],
       "stages" : [ {
+        "name" : "TruncateAssetMetadataStaging",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ "GetAssetChildren" ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "TruncateAssetMetadataStaging",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "GetAssetChildren" ]
+        },
+        "outputs" : [ ]
+      }, {
         "name" : "SetDatabaseAndTopAssetName",
         "display" : {
           "position" : {
@@ -2759,14 +2930,38 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"ReactorsDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"Plant\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"Grains\");\r\nstage.setMetadata(\"TopAssetName\", \"Sim Plant 001\");\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "GetAssetChildren" ]
+        "outputs" : [ "TruncateAssetMetadataStaging" ]
+      }, {
+        "name" : "ForEachAssetAttributes",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SubpipelineForEachAssetAttributes" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Minutes"
+          }
+        },
+        "outputs" : [ "UpsertAssetMetadata" ]
       }, {
         "name" : "GetAssetChildren",
         "display" : {
           "position" : {
-            "x" : 690,
+            "x" : 1140,
             "y" : 0
           }
         },
@@ -2790,27 +2985,42 @@
         },
         "outputs" : [ "ForEachAssetAttributes" ]
       }, {
-        "name" : "ForEachAssetAttributes",
+        "name" : "UpsertAssetMetadata",
         "display" : {
           "position" : {
-            "x" : 1140,
-            "y" : -150
-          },
-          "size" : {
-            "width" : 1050,
-            "height" : 390
-          },
-          "metadata" : { }
+            "x" : 2790,
+            "y" : 0
+          }
         },
         "description" : "",
         "config" : {
-          "type" : ".ForEachLoopConfig",
+          "type" : ".ReadConfig",
           "failureOutputs" : [ ],
-          "loopOutputs" : [ "SubpipelineForEachAssetAttributes" ],
-          "stageTimeout" : {
-            "duration" : 30,
-            "units" : "Minutes"
+          "reference" : {
+            "type" : "Input",
+            "name" : "UpsertAssetMetadata",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ReturnAsset",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAssetAttributes"
           }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
         },
         "outputs" : [ ]
       }, {
@@ -2831,31 +3041,31 @@
           "reference" : "{{Pipeline.MetadataAssetAttributesToDuckDBSubpipeline}}"
         },
         "outputs" : [ "ReturnAsset" ]
-      }, {
-        "name" : "ReturnAsset",
-        "display" : {
-          "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEachAssetAttributes"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
       "triggers" : [ {
-        "name" : "PolledTrigger",
+        "name" : "CronTrigger",
         "display" : {
           "position" : {
             "x" : -450,
             "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCron",
+          "enabled" : false,
+          "logging" : "on",
+          "schedule" : "0 0 * * *",
+          "timezone" : "local"
+        }
+      }, {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : -67
           }
         },
         "description" : "",
@@ -2867,22 +3077,6 @@
             "units" : "Days"
           },
           "mode" : "interval"
-        }
-      }, {
-        "name" : "CronTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : -67
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerCron",
-          "enabled" : false,
-          "logging" : "on",
-          "schedule" : "0 0 * * *",
-          "timezone" : "local"
         }
       } ],
       "errorHandler" : {
@@ -3092,7 +3286,7 @@
             "units" : "Seconds"
           }
         },
-        "outputs" : [ "UpsertAssetMetadata" ]
+        "outputs" : [ "InsertAssetMetadataStaging" ]
       }, {
         "name" : "HasAttributes",
         "display" : {
@@ -3116,7 +3310,7 @@
         },
         "outputs" : [ ]
       }, {
-        "name" : "UpsertAssetMetadata",
+        "name" : "InsertAssetMetadataStaging",
         "display" : {
           "position" : {
             "x" : 6389,
@@ -3129,7 +3323,7 @@
           "failureOutputs" : [ ],
           "reference" : {
             "type" : "Input",
-            "name" : "UpsertAssetMetadata",
+            "name" : "InsertAssetMetadataStaging",
             "path" : "",
             "params" : {
               "FileName" : "{{event.metadata.FileName}}"
