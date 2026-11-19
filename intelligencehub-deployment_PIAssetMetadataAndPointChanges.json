@@ -364,6 +364,28 @@
         }
       }
     }, {
+      "name" : "Checkpoint",
+      "connection" : "DuckDB",
+      "type" : "jdbc",
+      "qualifier" : {
+        "query" : "CHECKPOINT;",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
       "name" : "CountAssetMetadataWithPoints",
       "connection" : "DuckDB",
       "type" : "jdbc",
@@ -2323,6 +2345,45 @@
         },
         "outputs" : [ ]
       }, {
+        "name" : "UpsertAssetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 2790,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "UpsertAssetMetadata",
+            "path" : "",
+            "params" : {
+              "StagingTableName" : "{{event.metadata.StagingTableName}}"
+            },
+            "connectionName" : "Databricks_SQL"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SetDatabaseAndTopAssetName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setMetadata(\"StagingTableName\", \"workspace.default.assetmetadatastaging\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "TruncateAssetMetadataStaging" ]
+      }, {
         "name" : "ForEachAssetAttributes",
         "display" : {
           "position" : {
@@ -2346,45 +2407,6 @@
           }
         },
         "outputs" : [ "UpsertAssetMetadata" ]
-      }, {
-        "name" : "SetDatabaseAndTopAssetName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setMetadata(\"StagingTableName\", \"workspace.default.assetmetadatastaging\");\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "TruncateAssetMetadataStaging" ]
-      }, {
-        "name" : "UpsertAssetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 2790,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "UpsertAssetMetadata",
-            "path" : "",
-            "params" : {
-              "StagingTableName" : "{{event.metadata.StagingTableName}}"
-            },
-            "connectionName" : "Databricks_SQL"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ ]
       }, {
         "name" : "GetAssetChildren",
         "display" : {
@@ -2450,11 +2472,27 @@
       "trackActivity" : true,
       "queueSize" : 10000,
       "triggers" : [ {
-        "name" : "PolledTrigger",
+        "name" : "CronTrigger",
         "display" : {
           "position" : {
             "x" : -450,
             "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCron",
+          "enabled" : false,
+          "logging" : "on",
+          "schedule" : "0 0 * * *",
+          "timezone" : "local"
+        }
+      }, {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : -67
           }
         },
         "description" : "",
@@ -2466,22 +2504,6 @@
             "units" : "Days"
           },
           "mode" : "interval"
-        }
-      }, {
-        "name" : "CronTrigger",
-        "display" : {
-          "position" : {
-            "x" : -450,
-            "y" : -67
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".TriggerCron",
-          "enabled" : false,
-          "logging" : "on",
-          "schedule" : "0 0 * * *",
-          "timezone" : "local"
         }
       } ],
       "errorHandler" : {
@@ -3003,8 +3025,8 @@
             "params" : { },
             "connectionName" : "DuckDB"
           },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "Checkpoint" ]
         },
         "outputs" : [ ]
       }, {
@@ -3041,6 +3063,29 @@
           "reference" : "{{Pipeline.MetadataAssetAttributesToDuckDBSubpipeline}}"
         },
         "outputs" : [ "ReturnAsset" ]
+      }, {
+        "name" : "Checkpoint",
+        "display" : {
+          "position" : {
+            "x" : 3240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "Checkpoint",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
