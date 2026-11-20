@@ -2,8 +2,8 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.5",
-    "build" : "2026.11.3.3",
+    "version" : "4.5.6",
+    "build" : "2026.11.19.1",
     "stage" : "Release"
   },
   "project" : {
@@ -93,6 +93,23 @@
         "type" : "EmptyParameters"
       }
     }, {
+      "name" : "DropLocations",
+      "connection" : "Locations_SQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "drop table Locations"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
       "name" : "Locations",
       "connection" : "Locations_SQLite",
       "type" : "jdbc.sqlite",
@@ -134,6 +151,23 @@
           } ],
           "modelVersion" : ""
         }
+      }
+    }, {
+      "name" : "LocationsAll",
+      "connection" : "Locations_SQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from Locations order by Id"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
       }
     }, {
       "name" : "LocationsTableExists",
@@ -654,7 +688,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerCallable",
-          "enabled" : true,
+          "enabled" : false,
           "parameters" : {
             "type" : "EmptyParameters"
           }
@@ -670,12 +704,103 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 1,
             "units" : "Days"
           },
           "mode" : "interval"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "PopulateLocationsIntoLookupMap",
+      "tags" : [ "i3XLocationTracker" ],
+      "inputStages" : [ "ReadAllLocations" ],
+      "stages" : [ {
+        "name" : "GetCache",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "let cache = state.pipeline.get(\"Cache\");\r\nstage.setValue(cache);"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SetCache",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : -67
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "state.pipeline.set(\"Cache\", event.value);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "ReadAllLocations",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ "GetCache" ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "LocationsAll",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "Locations_SQLite"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "SetCache" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "CallableTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerCallable",
+          "enabled" : true,
+          "parameters" : {
+            "type" : "EmptyParameters"
+          }
         }
       } ],
       "errorHandler" : {
@@ -1261,81 +1386,25 @@
       "name" : "i3XLocationTracker"
     } ],
     "functions" : [ ],
-    "namespace" : [ {
-      "type" : "local",
-      "id" : "1b35be00-707d-455f-9b31-fceb807dba21",
-      "name" : "Site1",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "name" : "AMRs",
-      "parentNamespaceId" : "1b35be00-707d-455f-9b31-fceb807dba21",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Empty"
-      }
-    }, {
-      "type" : "local",
-      "id" : "405155b8-700e-4930-b655-26a3581b2d8c",
-      "name" : "AMR1",
-      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR1"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "a9628484-e125-4dd3-889e-eb0a119a18c5",
-      "name" : "AMR2",
-      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR2"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "7904cc79-d564-4e9f-9226-433ada59a624",
-      "name" : "AMR3",
-      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Lego_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR3"
-        }
-      }
-    }, {
-      "type" : "local",
-      "id" : "4e944ffe-c99a-4e5b-b6be-cc5ccb8d3dc6",
-      "name" : "AMR4",
-      "parentNamespaceId" : "378f2112-541b-4684-977f-bc54bc21245d",
-      "metadata" : [ ],
-      "reference" : {
-        "type" : "Instance",
-        "name" : "Locations_Lego_Instance",
-        "path" : "",
-        "params" : {
-          "Topic" : "Site1/AMRs/AMR4"
-        }
-      }
-    } ],
+    "namespace" : [ ],
     "lookupMap" : [ {
+      "name" : "DynamicLocations",
+      "tags" : [ "i3XLocationTracker" ],
+      "primaryKey" : "Id",
+      "source" : {
+        "type" : "dynamic",
+        "reference" : {
+          "type" : "Pipeline",
+          "name" : "PopulateLocationsIntoLookupMap",
+          "path" : "",
+          "params" : { }
+        },
+        "expirationInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      }
+    }, {
       "name" : "Locations",
       "tags" : [ "i3XLocationTracker" ],
       "primaryKey" : "Id",
@@ -5274,5 +5343,6 @@
     },
     "requestTimeoutSeconds" : 5,
     "heartbeatIntervalSeconds" : 10
-  }
+  },
+  "identityProviders" : { }
 }
