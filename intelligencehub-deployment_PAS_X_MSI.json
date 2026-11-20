@@ -2,8 +2,8 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.5",
-    "build" : "2026.11.3.3",
+    "version" : "4.5.6",
+    "build" : "2026.11.19.1",
     "stage" : "Release"
   },
   "project" : {
@@ -857,7 +857,7 @@
             "y" : 0
           }
         },
-        "description" : "ReadClosedMessages",
+        "description" : "Reads all closed order parameter messages from the MsiMessages connection",
         "config" : {
           "type" : ".ReadConfig",
           "failureOutputs" : [ ],
@@ -885,7 +885,7 @@
           },
           "metadata" : { }
         },
-        "description" : "",
+        "description" : "Iterates over each closed message to delete them individually",
         "config" : {
           "type" : ".ForEachLoopConfig",
           "failureOutputs" : [ ],
@@ -907,7 +907,7 @@
             "parent" : "ForEach"
           }
         },
-        "description" : "Delete by _id.  Merge read used to keep original message to run a single object.",
+        "description" : "Deletes the message by _id and merges the delete operation result with the original message",
         "config" : {
           "type" : ".MergeReadConfig",
           "failureOutputs" : [ ],
@@ -939,7 +939,7 @@
             "parent" : "ForEach"
           }
         },
-        "description" : "",
+        "description" : "Returns the result of the delete operation for this iteration",
         "config" : {
           "type" : ".ReturnConfig"
         },
@@ -955,7 +955,7 @@
             "y" : 0
           }
         },
-        "description" : "",
+        "description" : "Triggers the pipeline every 30 minutes to clean up closed order parameter messages",
         "config" : {
           "type" : ".TriggerCron",
           "enabled" : true,
@@ -969,7 +969,7 @@
       }
     }, {
       "name" : "ProcessMSIRequestAndPublishResult",
-      "description" : "Query open messages, process them and send them to Pas-X.",
+      "description" : "Queries open messages, process them and send them to Pas-X.",
       "tags" : [ "PAS_X_MSI" ],
       "inputStages" : [ "OpenMessages" ],
       "stages" : [ {
@@ -980,7 +980,7 @@
             "y" : 0
           }
         },
-        "description" : "Preserve values in metadata.",
+        "description" : "Removes _id, _name and _timestamp from the row and retains them in metadata.filtered (used by SQLite to update the row by _id). Fans out to StringToObject and InprocessStatus.",
         "config" : {
           "type" : ".AttributeFilterConfig",
           "filterOption" : "exclude",
@@ -1006,7 +1006,7 @@
             "y" : -67
           }
         },
-        "description" : "Push model to metata.",
+        "description" : "Moves the parsed MsiMessageContainer into metadata.message so the original message can be rebuilt after the Weight parameter is added.",
         "config" : {
           "type" : ".AttributeFilterConfig",
           "filterOption" : "exclude",
@@ -1026,7 +1026,7 @@
             "y" : -67
           }
         },
-        "description" : "Map array of parameters into the parameters key.",
+        "description" : "Rebuilds the MsiMessageContainer_MsiOrderParameterMessage model from metadata.message, replacing the parameter array with the updated array (including Weight).",
         "config" : {
           "type" : ".ModelConfig",
           "model" : "MsiMessageContainer_MsiOrderParameterMessage",
@@ -1266,7 +1266,7 @@
             "y" : -67
           }
         },
-        "description" : "Convert JSON to XML",
+        "description" : "Serializes the updated message model from JSON to an XML string for the MSI REST endpoint.",
         "config" : {
           "type" : ".XMLFormatConfig",
           "outgoingType" : "String"
@@ -1280,7 +1280,7 @@
             "y" : 0
           }
         },
-        "description" : "Update status in SQLite",
+        "description" : "Updates the Messages table row (matched on metadata.filtered._id) with the status payload from InprocessStatus, ClosedStatus or ErrorStatus.",
         "config" : {
           "type" : ".DynamicWriteConfig",
           "failureOutputs" : [ ],
@@ -1312,7 +1312,7 @@
             "y" : -67
           }
         },
-        "description" : "",
+        "description" : "Builds a ParameterDouble 'Weight' qualifier parameter with a formatted acquisition timestamp. Value is currently simulated (Math.random() * 10).",
         "config" : {
           "type" : ".ModelConfig",
           "model" : "ParameterDouble",
@@ -1360,7 +1360,7 @@
             "y" : 0
           }
         },
-        "description" : "Get open orders from SQLite.   Limit parameter provides number of rows to return.",
+        "description" : "Reads open MSI order parameter messages from the MsiMessages SQLite connection (OpenOrderParameterMessage input). Limit parameter sets the number of rows returned.",
         "config" : {
           "type" : ".ReadConfig",
           "failureOutputs" : [ ],
@@ -1385,7 +1385,7 @@
             "y" : 135
           }
         },
-        "description" : "Set status to Inprocess",
+        "description" : "Sets the row status to Inprocess as soon as the message is picked up so it is not re-read on the next poll.",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "const status = { \"status\": \"Inprocess\" };\r\nstage.setValue(status);"
@@ -1399,7 +1399,7 @@
             "y" : 0
           }
         },
-        "description" : "Set status to Error and provide error message from PostMessage.",
+        "description" : "Failure path from PostMessage: sets the row status to Error and stores the MSI write error (metadata.writeResults[0]) as errorMessage.",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "const status = { \"status\": \"Error\" };\r\nconst errorMessage = { \"errorMessage\": event.metadata.writeResults[0] }\r\nlet payload = {...status,...errorMessage};\r\nstage.setValue(payload);"
@@ -1413,7 +1413,7 @@
             "y" : -67
           }
         },
-        "description" : "Post to MSI",
+        "description" : "Posts the XML message to PAS-X MSI via the MsiRESTClient PostMessage output. Success routes to ClosedStatus; failure routes to ErrorStatus.",
         "config" : {
           "type" : ".WriteConfig",
           "failureOutputs" : [ "ErrorStatus" ],
@@ -1430,7 +1430,7 @@
             "y" : -67
           }
         },
-        "description" : "",
+        "description" : "Parses the stored message JSON string (event.value.message) into an object.",
         "config" : {
           "type" : ".JSONataTransformConfig",
           "transformExpression" : "$eval(event.value.message)"
@@ -1444,7 +1444,7 @@
             "y" : -67
           }
         },
-        "description" : "Get MsiOrderParameterMessage from metadata and separate them into an array.",
+        "description" : "Appends the Weight parameter to the existing MsiOrderParameterMessage parameter array held in metadata.message.",
         "config" : {
           "type" : ".JSONataTransformConfig",
           "transformExpression" : "$append(event.metadata.message.MsiMessageContainer.message.MsiOrderParameterMessage.parameter, event.value)"
@@ -1458,7 +1458,7 @@
             "y" : -135
           }
         },
-        "description" : "Set status to Closed",
+        "description" : "Success path from PostMessage: sets the row status to Closed.",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "const status = { \"status\": \"Closed\" };\r\nstage.setValue(status);"
@@ -1475,10 +1475,10 @@
             "y" : 0
           }
         },
-        "description" : "",
+        "description" : "Polls for open messages every 5 seconds.",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 5,
             "units" : "Seconds"
@@ -1491,7 +1491,7 @@
       }
     }, {
       "name" : "ReceiveMSIRequestAndSendAcknowledge",
-      "description" : "Capture Request From MSI.  Save message into SQLite.  Reply with acknowledgement.",
+      "description" : "This is an API-triggered request/response pipeline that receives MSI (Message Service Interface) messages via HTTP, persists them to a SQLite database, and returns an XML acknowledgement response.",
       "tags" : [ "PAS_X_MSI" ],
       "inputStages" : [ "XMLParser" ],
       "stages" : [ {
@@ -1502,7 +1502,7 @@
             "y" : 67
           }
         },
-        "description" : "Model error transfer result.",
+        "description" : "Constructs an error response containing the message instance ID, system ID, success=false flag, and error details from the write operation.",
         "config" : {
           "type" : ".ModelConfig",
           "model" : "TransferResult",
@@ -1551,7 +1551,7 @@
             "y" : -67
           }
         },
-        "description" : "Model successful transfer result.",
+        "description" : "Constructs a success response containing the message instance ID, system ID, success=true flag, and no error details.",
         "config" : {
           "type" : ".ModelConfig",
           "model" : "TransferResult",
@@ -1600,7 +1600,7 @@
             "y" : 0
           }
         },
-        "description" : "Convert JSON to XML.",
+        "description" : "Converts the TransferResult JSON object into an XML string format for the response payload.",
         "config" : {
           "type" : ".XMLFormatConfig",
           "outgoingType" : "String"
@@ -1614,7 +1614,7 @@
             "y" : 0
           }
         },
-        "description" : "",
+        "description" : "Returns the XML acknowledgement response back to the API caller, completing the request/response cycle.",
         "config" : {
           "type" : ".ReturnConfig"
         },
@@ -1627,7 +1627,7 @@
             "y" : 0
           }
         },
-        "description" : "Insert data into SQLite",
+        "description" : "Inserts the parsed message with Open status into the SQLite Messages table. Routes to success or error path based on insert outcome.",
         "config" : {
           "type" : ".DynamicWriteConfig",
           "failureOutputs" : [ "TransferResultError" ],
@@ -1635,17 +1635,17 @@
           "eventPath" : "",
           "connectionType" : "jdbc.sqlite",
           "qualifier" : {
-            "table" : "Messages",
-            "writeType" : "insert",
-            "whereColumn" : "",
-            "logAsJSON" : false,
-            "createOption" : "create_and_update",
             "tableCacheInterval" : {
               "duration" : 1,
               "units" : "Hours"
             },
             "breakupArrays" : false,
-            "type" : "Tag"
+            "writeType" : "insert",
+            "logAsJSON" : false,
+            "type" : "Tag",
+            "table" : "Messages",
+            "whereColumn" : "",
+            "createOption" : "create_and_update"
           },
           "qualifierExpression" : "",
           "writeReturn" : "completion"
@@ -1659,7 +1659,7 @@
             "y" : 0
           }
         },
-        "description" : "Convert incomming message into XML.",
+        "description" : "Parses the incoming XML request payload into a structured JSON object for downstream processing.",
         "config" : {
           "type" : ".XMLParserConfig",
           "failureOutputs" : [ ],
@@ -1675,7 +1675,7 @@
             "y" : 0
           }
         },
-        "description" : "Add status key and set to Open.",
+        "description" : "Enriches the message object by adding a status field with value 'Open' to track message processing state.",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
           "transformExpression" : "const status = { \"status\": \"Open\" };\r\nlet payload = {...event.value,...status};\r\nstage.setValue(payload);"
@@ -1689,7 +1689,7 @@
             "y" : 0
           }
         },
-        "description" : "",
+        "description" : "Converts the parsed XML object into a JSON string representation and wraps it in a message field for storage.",
         "config" : {
           "type" : ".JSONataTransformConfig",
           "transformExpression" : "{\r\n  \"message\": $string(event.value)\r\n}"
@@ -1706,7 +1706,7 @@
             "y" : 0
           }
         },
-        "description" : "",
+        "description" : "HTTP API endpoint that receives incoming MSI message requests and initiates the pipeline processing.",
         "config" : {
           "type" : ".TriggerApi",
           "enabled" : true,
