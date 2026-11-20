@@ -2628,7 +2628,7 @@
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setMetadata(\"StagingTableName\", \"workspace.default.assetmetadatastaging\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"Database\", \"WellDowntimeDemo\");\r\nstage.setMetadata(\"TopAssetName\", \"West Texas\");\r\nstage.setValue(event.value);"
         },
         "outputs" : [ "TruncateAssetMetadataStaging" ]
       }, {
@@ -2763,6 +2763,62 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "SetPiplineName" ],
       "stages" : [ {
+        "name" : "GetAttributes",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : -120
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[0].attributes"
+        },
+        "outputs" : [ "ArrayLengthGT0" ]
+      }, {
+        "name" : "SetReturnToSingleObject",
+        "display" : {
+          "position" : {
+            "x" : 4215,
+            "y" : 142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "{\r\n    \"return\": event.value\r\n}"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "SetFileName",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "AssetMetadata" ]
+      }, {
+        "name" : "AssetMetadata",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "description" : "The Stage moves the asset information to metadata.",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"assetName\", event.value._name);\r\nconst path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "HasParent" ]
+      }, {
         "name" : "AssetAttributesWithParent",
         "display" : {
           "position" : {
@@ -2790,137 +2846,11 @@
         },
         "outputs" : [ "HasAttributes" ]
       }, {
-        "name" : "AssetMetadata",
-        "display" : {
-          "position" : {
-            "x" : 1140,
-            "y" : 0
-          }
-        },
-        "description" : "The Stage moves the asset information to metadata.",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"assetName\", event.value._name);\r\nconst path = event.value._path;\r\nconst result = path.includes(\"\\\\\") ? path.replaceAll(\"\\\\\", \"/\") : path;\r\nconst parent = path.substring(0, path.lastIndexOf(\"\\\\\"))\r\nstage.setMetadata(\"assetPath\", result);\r\nstage.setMetadata(\"elementID\", event.value.elementID);\r\nstage.setMetadata(\"parent\", parent);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "HasParent" ]
-      }, {
-        "name" : "GetAttributes",
-        "display" : {
-          "position" : {
-            "x" : 2940,
-            "y" : -45
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value[0].attributes"
-        },
-        "outputs" : [ "ArrayLengthGT0" ]
-      }, {
-        "name" : "SetReturnToSingleObject",
-        "display" : {
-          "position" : {
-            "x" : 5940,
-            "y" : 75
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "{\r\n    \"return\": event.value\r\n}"
-        },
-        "outputs" : [ "Return" ]
-      }, {
-        "name" : "ArrayLengthGT0",
-        "display" : {
-          "position" : {
-            "x" : 3390,
-            "y" : -45
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "    return Boolean(event.value.length > 0)",
-            "outputs" : [ "ForEachAttribute" ],
-            "description" : "Value Is True"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "SetReturnToSingleObject" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "HasParent",
-        "display" : {
-          "position" : {
-            "x" : 1590,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.parent != \"\")",
-            "outputs" : [ "AssetAttributesWithParent" ],
-            "description" : "NotEmpty"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "AssetAttributesNoParent" ],
-            "description" : "Default"
-          } ]
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "assetmetadatastaging",
-        "display" : {
-          "position" : {
-            "x" : 5490,
-            "y" : -165
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.Databricks_Zerobus}}",
-          "eventPath" : "",
-          "connectionType" : "databricks.zerobus",
-          "qualifier" : {
-            "createOption" : "off",
-            "breakupArrays" : false,
-            "catalog" : "workspace",
-            "schema" : "default",
-            "table" : "{{event.metadata.JustTableName}}"
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "SetReturnToSingleObject" ]
-      }, {
-        "name" : "SetPiplineName",
-        "display" : {
-          "position" : {
-            "x" : 240,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SetFileName" ]
-      }, {
         "name" : "ForEachAttribute",
         "display" : {
           "position" : {
             "x" : 3840,
-            "y" : -315
+            "y" : -292
           },
           "size" : {
             "width" : 1050,
@@ -2938,27 +2868,39 @@
             "units" : "Seconds"
           }
         },
-        "outputs" : [ "SetJustTable" ]
+        "outputs" : [ "assetmetadatastaging" ]
       }, {
-        "name" : "SetFileName",
+        "name" : "assetmetadatastaging",
         "display" : {
           "position" : {
-            "x" : 690,
-            "y" : 0
+            "x" : 5040,
+            "y" : -142
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.Databricks_Zerobus}}",
+          "eventPath" : "",
+          "connectionType" : "databricks.zerobus",
+          "qualifier" : {
+            "createOption" : "off",
+            "breakupArrays" : false,
+            "catalog" : "workspace",
+            "schema" : "default",
+            "table" : "assetmetadatastaging"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
         },
-        "outputs" : [ "AssetMetadata" ]
+        "outputs" : [ "JustFirstRow" ]
       }, {
         "name" : "Return",
         "display" : {
           "position" : {
-            "x" : 6390,
-            "y" : 75
+            "x" : 5940,
+            "y" : 0
           }
         },
         "description" : "",
@@ -2966,6 +2908,56 @@
           "type" : ".ReturnConfig"
         },
         "outputs" : [ ]
+      }, {
+        "name" : "ArrayLengthGT0",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : -120
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "    return Boolean(event.value.length > 0)",
+            "outputs" : [ "ForEachAttribute" ],
+            "description" : "Value Is True"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "SetReturnToSingleObject" ],
+            "description" : "Default"
+          } ]
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "JustFirstRow",
+        "display" : {
+          "position" : {
+            "x" : 5490,
+            "y" : -142
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setValue(event.value[0]);"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "SetPiplineName",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "stage.setMetadata(\"PipelineName\", stage.pipelineName);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SetFileName" ]
       }, {
         "name" : "AssetAttributesNoParent",
         "display" : {
@@ -2994,20 +2986,6 @@
         },
         "outputs" : [ "HasAttributes" ]
       }, {
-        "name" : "SetJustTable",
-        "display" : {
-          "position" : {
-            "x" : 5040,
-            "y" : -165
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const justTableName = event.metadata.StagingTableName.replace('workspace.default.', '');\r\nstage.setMetadata(\"JustTableName\" , justTableName);\r\n\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "assetmetadatastaging" ]
-      }, {
         "name" : "HasAttributes",
         "display" : {
           "position" : {
@@ -3030,19 +3008,25 @@
         },
         "outputs" : [ ]
       }, {
-        "name" : "ReturnAttribute",
+        "name" : "HasParent",
         "display" : {
           "position" : {
-            "x" : 600,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "ForEachAttribute"
+            "x" : 1590,
+            "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".ReturnConfig"
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.parent != \"\")",
+            "outputs" : [ "AssetAttributesWithParent" ],
+            "description" : "NotEmpty"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "AssetAttributesNoParent" ],
+            "description" : "Default"
+          } ]
         },
         "outputs" : [ ]
       }, {
@@ -3138,6 +3122,22 @@
           "expandArray" : false
         },
         "outputs" : [ "ReturnAttribute" ]
+      }, {
+        "name" : "ReturnAttribute",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachAttribute"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
