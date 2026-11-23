@@ -1173,7 +1173,7 @@
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "SELECT\n    pointID,\n    name AS \"pointName\",\n    COALESCE(value_double, value_int64) AS \"valueNumber\",\n    CASE\n        WHEN value_double IS NULL AND value_int64 IS NULL\n        THEN COALESCE(value_string, CAST(value_boolean AS VARCHAR))\n    END AS \"valueOther\",\n    quality,\n    time\nFROM read_parquet('{{this.FileName}}')\nLIMIT {{this.Limit}} OFFSET {{this.Offset}}",
+        "query" : "SELECT\n    pointID,\n    name AS \"pointName\",\n    COALESCE(value_double, value_int64) AS \"valueNumber\",\n    CASE\n        WHEN value_double IS NULL AND value_int64 IS NULL\n        THEN COALESCE(value_string, CAST(value_boolean AS VARCHAR))\n    END AS \"valueOther\",\n    quality,\n    time\nFROM read_parquet('{{this.FileName}}', file_row_number = true)\nWHERE file_row_number >= {{this.Offset}}\n  AND file_row_number <  {{this.Offset}} + {{this.Limit}}",
         "index" : {
           "enabled" : false,
           "indexName" : "",
