@@ -2,8 +2,8 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.6",
-    "build" : "2026.11.19.1",
+    "version" : "4.5.7",
+    "build" : "2026.11.20.1",
     "stage" : "Release"
   },
   "project" : {
@@ -1173,7 +1173,7 @@
       "connection" : "DuckDB",
       "type" : "jdbc",
       "qualifier" : {
-        "query" : "WITH rp AS (\n    SELECT pointID, name, value_double, value_int64, value_string, value_boolean, quality, time\n    FROM read_parquet('{{this.FileName}}')\n    ORDER BY time, name\n    LIMIT {{this.Limit}} OFFSET {{this.Offset}}\n)\nSELECT\n    pointID,\n    rp.name AS \"pointName\",\n    COALESCE(rp.value_double, rp.value_int64) AS \"valueNumber\",\n    CASE\n        WHEN rp.value_double IS NULL AND rp.value_int64 IS NULL\n        THEN COALESCE(rp.value_string, CAST(rp.value_boolean AS VARCHAR))\n    END AS \"valueOther\",\n    rp.quality,\n    rp.time\nFROM rp\nORDER BY rp.time, rp.name;",
+        "query" : "SELECT\n    pointID,\n    name AS \"pointName\",\n    COALESCE(value_double, value_int64) AS \"valueNumber\",\n    CASE\n        WHEN value_double IS NULL AND value_int64 IS NULL\n        THEN COALESCE(value_string, CAST(value_boolean AS VARCHAR))\n    END AS \"valueOther\",\n    quality,\n    time\nFROM read_parquet('{{this.FileName}}')\nLIMIT {{this.Limit}} OFFSET {{this.Offset}}",
         "index" : {
           "enabled" : false,
           "indexName" : "",
@@ -1209,64 +1209,6 @@
             "required" : false,
             "array" : false,
             "defaultValue" : 100,
-            "internalType" : {
-              "variant" : "String"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "Offset",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 0,
-            "internalType" : {
-              "variant" : "String"
-            }
-          } ],
-          "modelVersion" : ""
-        }
-      }
-    }, {
-      "name" : "PIPointSelectTransformWithAssetMetadata",
-      "connection" : "DuckDB",
-      "type" : "jdbc",
-      "qualifier" : {
-        "query" : "WITH rp AS (\n    SELECT name, value_double, value_int64, value_string, value_boolean, quality, time\n    FROM read_parquet('{{this.FileName}}')\n    ORDER BY time, name\n    LIMIT {{this.Limit}} OFFSET {{this.Offset}}\n)\nSELECT\n    rp.name AS \"pointName\",\n    COALESCE(rp.value_double, rp.value_int64) AS \"valueNumber\",\n    CASE\n        WHEN rp.value_double IS NULL AND rp.value_int64 IS NULL\n        THEN COALESCE(rp.value_string, CAST(rp.value_boolean AS VARCHAR))\n    END AS \"valueOther\",\n    rp.quality,\n    rp.time,\n    am.* EXCLUDE (pointName)\nFROM rp\nLEFT JOIN AssetMetadata am\n       ON am.pointName = rp.name\nORDER BY rp.time, rp.name;",
-        "index" : {
-          "enabled" : false,
-          "indexName" : "",
-          "indexValue" : ""
-        }
-      },
-      "cacheLifetime" : {
-        "enabled" : false
-      },
-      "template" : {
-        "type" : "Off"
-      },
-      "referenceMap" : [ ],
-      "parameters" : {
-        "type" : "inline",
-        "model" : {
-          "name" : "params",
-          "tags" : [ ],
-          "attributes" : [ {
-            "attributeType" : "Internal",
-            "name" : "FileName",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : "..//appData//ReadPointChangeParquetLimit1000Offset0.parquet",
-            "internalType" : {
-              "variant" : "String"
-            }
-          }, {
-            "attributeType" : "Internal",
-            "name" : "Limit",
-            "nullable" : false,
-            "required" : false,
-            "array" : false,
-            "defaultValue" : 10000,
             "internalType" : {
               "variant" : "String"
             }
@@ -3152,7 +3094,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerCallable",
-          "enabled" : true,
+          "enabled" : false,
           "parameters" : {
             "type" : "EmptyParameters"
           }
@@ -3810,7 +3752,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerCallable",
-          "enabled" : true,
+          "enabled" : false,
           "parameters" : {
             "type" : "EmptyParameters"
           }
@@ -5017,7 +4959,7 @@
         "description" : "",
         "config" : {
           "type" : ".TriggerPolled",
-          "enabled" : true,
+          "enabled" : false,
           "interval" : {
             "duration" : 1,
             "units" : "Minutes"
@@ -5033,33 +4975,45 @@
       "tags" : [ "PIAssetMetadataAndPointChanges" ],
       "inputStages" : [ "GetLastRunMaxTime" ],
       "stages" : [ {
-        "name" : "SetArrayOfPoints",
+        "name" : "SetFileName",
         "display" : {
           "position" : {
-            "x" : 2490,
+            "x" : 1140,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"ArrayOfPoints\", event.value);\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "SetCurrentTime" ]
+        "outputs" : [ "AssetMetadataWithPoints" ]
       }, {
-        "name" : "SetRunMaxTime",
+        "name" : "AssetMetadataWithPoints",
         "display" : {
           "position" : {
-            "x" : 8640,
-            "y" : 67
+            "x" : 1590,
+            "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.metadata.CurrentTime);\r\nstage.setValue(event.value);"
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "AssetMetadataWithPointsOrderByIdLimitAndOffset",
+            "path" : "",
+            "params" : {
+              "Limit" : "1000",
+              "Offset" : "0"
+            },
+            "connectionName" : "DuckDB"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
         },
-        "outputs" : [ ]
+        "outputs" : [ "ArrayOfPointName" ]
       }, {
         "name" : "GetLastRunMaxTime",
         "display" : {
@@ -5075,19 +5029,128 @@
         },
         "outputs" : [ "SetPiplineName" ]
       }, {
-        "name" : "SetCurrentTime",
+        "name" : "PointChanges",
         "display" : {
           "position" : {
-            "x" : 2940,
+            "x" : 3390,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ "Error" ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "PointChangesParquet",
+            "path" : "",
+            "params" : {
+              "PointsArray" : "{{event.value}}",
+              "SubscriptionId" : "{{event.metadata.PipelineName}}"
+            },
+            "connectionName" : "PI"
+          },
+          "handleGoodNoData" : true,
+          "goodNoDataOutputs" : [ "MissedPointChanges" ]
+        },
+        "outputs" : [ "WriteParquet" ]
+      }, {
+        "name" : "WriteParquet",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : -240
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.File}}",
+          "eventPath" : "",
+          "connectionType" : "file",
+          "qualifier" : {
+            "type" : "write",
+            "fileName" : "{{event.metadata.FileName}}",
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "Delay100ms" ]
+      }, {
+        "name" : "SetRunMaxTime",
+        "display" : {
+          "position" : {
+            "x" : 8640,
+            "y" : 90
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.metadata.CurrentTime);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ProduceError",
+        "display" : {
+          "position" : {
+            "x" : 7740,
+            "y" : 225
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ErrorConfig",
+          "errorMessage" : "{{event.metadata.readResults.error}}"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "WriteMissedPointChanges",
+        "display" : {
+          "position" : {
+            "x" : 8190,
+            "y" : 90
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.DuckDB}}",
+          "eventPath" : "",
+          "connectionType" : "jdbc",
+          "qualifier" : {
+            "table" : "MissedPointChanges",
+            "writeType" : "insert",
+            "whereColumn" : "",
+            "logAsJSON" : false,
+            "createOption" : "off",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "SetRunMaxTime" ]
+      }, {
+        "name" : "SetArrayOfPoints",
+        "display" : {
+          "position" : {
+            "x" : 2490,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"CurrentTime\", new Date());\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"ArrayOfPoints\", event.value);\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "PointChanges" ]
+        "outputs" : [ "SetCurrentTime" ]
       }, {
         "name" : "SetPiplineName",
         "display" : {
@@ -5103,59 +5166,25 @@
         },
         "outputs" : [ "SetFileName" ]
       }, {
-        "name" : "While",
+        "name" : "ArrayOfPointName",
         "display" : {
           "position" : {
-            "x" : 4740,
-            "y" : -457
-          },
-          "size" : {
-            "width" : 2850,
-            "height" : 525
-          },
-          "metadata" : { }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".WhileLoopConfig",
-          "failureOutputs" : [ "MissedPointChanges" ],
-          "loopOutputs" : [ "SetLimitAndOffset" ],
-          "stageTimeout" : {
-            "duration" : 5,
-            "units" : "Minutes"
-          },
-          "expression" : "return loop.metadata.Data === true;",
-          "loopValue" : "LAST_RETURN"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "Error",
-        "display" : {
-          "position" : {
-            "x" : 5101,
-            "y" : 275
+            "x" : 2040,
+            "y" : 0
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".SwitchConfig",
-          "switchCases" : [ {
-            "expression" : "return Boolean(event.metadata.readResults.error === \"Value is missing or bad quality. PI DataPipe was closed by the PI System because it was not read for more than 10 minutes. Re-creating the data pipe.\")",
-            "outputs" : [ "MissedPointChanges" ],
-            "description" : "Read More Than 10 minutes"
-          }, {
-            "expression" : "return true",
-            "outputs" : [ "ProduceError" ],
-            "description" : "Default"
-          } ]
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "event.value[].pointName"
         },
-        "outputs" : [ ]
+        "outputs" : [ "SetArrayOfPoints" ]
       }, {
         "name" : "MissedPointChanges",
         "display" : {
           "position" : {
             "x" : 7740,
-            "y" : 67
+            "y" : 90
           }
         },
         "description" : "",
@@ -5199,126 +5228,45 @@
         },
         "outputs" : [ "WriteMissedPointChanges" ]
       }, {
-        "name" : "WriteParquet",
+        "name" : "While",
         "display" : {
           "position" : {
-            "x" : 3840,
-            "y" : -240
-          }
+            "x" : 4740,
+            "y" : -457
+          },
+          "size" : {
+            "width" : 2850,
+            "height" : 525
+          },
+          "metadata" : { }
         },
         "description" : "",
         "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.File}}",
-          "eventPath" : "",
-          "connectionType" : "file",
-          "qualifier" : {
-            "type" : "write",
-            "fileName" : "{{event.metadata.FileName}}",
-            "breakupArrays" : false
+          "type" : ".WhileLoopConfig",
+          "failureOutputs" : [ "MissedPointChanges" ],
+          "loopOutputs" : [ "SetLimitAndOffset" ],
+          "stageTimeout" : {
+            "duration" : 5,
+            "units" : "Minutes"
           },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
+          "expression" : "return loop.metadata.Data === true;",
+          "loopValue" : "LAST_RETURN"
         },
-        "outputs" : [ "Delay100ms" ]
+        "outputs" : [ ]
       }, {
-        "name" : "AssetMetadataWithPoints",
+        "name" : "SetCurrentTime",
         "display" : {
           "position" : {
-            "x" : 1590,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "AssetMetadataWithPointsOrderByIdLimitAndOffset",
-            "path" : "",
-            "params" : {
-              "Limit" : "1000",
-              "Offset" : "0"
-            },
-            "connectionName" : "DuckDB"
-          },
-          "handleGoodNoData" : false,
-          "goodNoDataOutputs" : [ ]
-        },
-        "outputs" : [ "ArrayOfPointName" ]
-      }, {
-        "name" : "WriteMissedPointChanges",
-        "display" : {
-          "position" : {
-            "x" : 8190,
-            "y" : 67
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".DynamicWriteConfig",
-          "failureOutputs" : [ ],
-          "connectionReference" : "{{Connection.DuckDB}}",
-          "eventPath" : "",
-          "connectionType" : "jdbc",
-          "qualifier" : {
-            "table" : "MissedPointChanges",
-            "writeType" : "insert",
-            "whereColumn" : "",
-            "logAsJSON" : false,
-            "createOption" : "off",
-            "tableCacheInterval" : {
-              "duration" : 1,
-              "units" : "Hours"
-            },
-            "breakupArrays" : false
-          },
-          "qualifierExpression" : "",
-          "writeReturn" : "completion"
-        },
-        "outputs" : [ "SetRunMaxTime" ]
-      }, {
-        "name" : "SetFileName",
-        "display" : {
-          "position" : {
-            "x" : 1140,
+            "x" : 2940,
             "y" : 0
           }
         },
         "description" : "",
         "config" : {
           "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "stage.setMetadata(\"FileName\", \"../appData/\" + event.metadata.PipelineName  + \".parquet\");\r\nstage.setValue(event.value);"
+          "transformExpression" : "stage.setMetadata(\"CurrentTime\", new Date());\r\nstage.setValue(event.value);"
         },
-        "outputs" : [ "AssetMetadataWithPoints" ]
-      }, {
-        "name" : "PointChanges",
-        "display" : {
-          "position" : {
-            "x" : 3390,
-            "y" : 0
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReadConfig",
-          "failureOutputs" : [ "Error" ],
-          "reference" : {
-            "type" : "Input",
-            "name" : "PointChangesParquet",
-            "path" : "",
-            "params" : {
-              "PointsArray" : "{{event.value}}",
-              "SubscriptionId" : "{{event.metadata.PipelineName}}"
-            },
-            "connectionName" : "PI"
-          },
-          "handleGoodNoData" : true,
-          "goodNoDataOutputs" : [ "MissedPointChanges" ]
-        },
-        "outputs" : [ "WriteParquet" ]
+        "outputs" : [ "PointChanges" ]
       }, {
         "name" : "Delay100ms",
         "display" : {
@@ -5337,19 +5285,27 @@
         },
         "outputs" : [ "While" ]
       }, {
-        "name" : "ArrayOfPointName",
+        "name" : "Error",
         "display" : {
           "position" : {
-            "x" : 2040,
-            "y" : 0
+            "x" : 6015,
+            "y" : 202
           }
         },
         "description" : "",
         "config" : {
-          "type" : ".JSONataTransformConfig",
-          "transformExpression" : "event.value[].pointName"
+          "type" : ".SwitchConfig",
+          "switchCases" : [ {
+            "expression" : "return Boolean(event.metadata.readResults.error === \"Value is missing or bad quality. PI DataPipe was closed by the PI System because it was not read for more than 10 minutes. Re-creating the data pipe.\")",
+            "outputs" : [ "MissedPointChanges" ],
+            "description" : "Read More Than 10 minutes"
+          }, {
+            "expression" : "return true",
+            "outputs" : [ "ProduceError" ],
+            "description" : "Default"
+          } ]
         },
-        "outputs" : [ "SetArrayOfPoints" ]
+        "outputs" : [ ]
       }, {
         "name" : "TrueData",
         "display" : {
@@ -5398,6 +5354,56 @@
         },
         "outputs" : [ "SetRunMaxTimeToLast" ]
       }, {
+        "name" : "SetRunMaxTimeToLast",
+        "display" : {
+          "position" : {
+            "x" : 1950,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "While"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.value[event.value.length-1].time);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 2400,
+            "y" : 217
+          },
+          "metadata" : {
+            "parent" : "While"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SetLimitAndOffset",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 217
+          },
+          "metadata" : {
+            "parent" : "While"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const limit = 10000\r\nstage.setMetadata(\"Limit\", limit);\r\nstage.setMetadata(\"Offset\", event.metadata.loopIndex * limit);\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "SelectTransformParquetData" ]
+      }, {
         "name" : "FalseData",
         "display" : {
           "position" : {
@@ -5444,70 +5450,6 @@
           "goodNoDataOutputs" : [ "FalseData" ]
         },
         "outputs" : [ "TrueData" ]
-      }, {
-        "name" : "SetRunMaxTimeToLast",
-        "display" : {
-          "position" : {
-            "x" : 1950,
-            "y" : 150
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "// set RunMaxTime\r\nstate.pipeline.set(\"RunMaxTime\", event.value[event.value.length-1].time);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "Return" ]
-      }, {
-        "name" : "SetLimitAndOffset",
-        "display" : {
-          "position" : {
-            "x" : 150,
-            "y" : 217
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".JavaScriptTransformConfig",
-          "transformExpression" : "const limit = 10000\r\nstage.setMetadata(\"Limit\", limit);\r\nstage.setMetadata(\"Offset\", event.metadata.loopIndex * limit);\r\nstage.setValue(event.value);"
-        },
-        "outputs" : [ "SelectTransformParquetData" ]
-      }, {
-        "name" : "Return",
-        "display" : {
-          "position" : {
-            "x" : 2400,
-            "y" : 217
-          },
-          "metadata" : {
-            "parent" : "While"
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ReturnConfig"
-        },
-        "outputs" : [ ]
-      }, {
-        "name" : "ProduceError",
-        "display" : {
-          "position" : {
-            "x" : 6169,
-            "y" : 414
-          }
-        },
-        "description" : "",
-        "config" : {
-          "type" : ".ErrorConfig",
-          "errorMessage" : "{{event.metadata.readResults.error}}"
-        },
-        "outputs" : [ ]
       } ],
       "trackActivity" : false,
       "queueSize" : 10000,
